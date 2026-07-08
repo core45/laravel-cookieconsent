@@ -8,7 +8,7 @@ Blade-driven script gating, and an append-only database audit trail of every con
 | Capability | What you get |
 |---|---|
 | Configuration | A single `config/cookieconsent.php` array, passed through to `CookieConsent.run()` almost verbatim |
-| Translations | Standard Laravel lang files (`resources/lang/{locale}/cookieconsent.php`), `active` or `all` locales |
+| Translations | Standard Laravel lang files (`lang/vendor/cookieconsent/{locale}/cookieconsent.php`), `active` or `all` locales |
 | Script gating | `@cookiescript` Blade directives that emit blocked `<script type="text/plain">` tags |
 | Server-side reads | `@consent`/`Consent`/`CookieConsent` facade + a `consent:*` route middleware |
 | Audit trail | An append-only `consent_logs` table, export/prune Artisan commands, optional Filament resource |
@@ -28,7 +28,7 @@ php artisan migrate
 Other publishable tags, used only if you need to customize them:
 
 ```bash
-php artisan vendor:publish --tag=cookieconsent-lang        # resources/lang/vendor/cookieconsent/{locale}/*.php
+php artisan vendor:publish --tag=cookieconsent-lang        # lang/vendor/cookieconsent/{locale}/*.php
 php artisan vendor:publish --tag=cookieconsent-views        # resources/views/vendor/cookieconsent/*.blade.php
 php artisan vendor:publish --tag=cookieconsent-migrations   # copy the migration into database/migrations
 ```
@@ -120,10 +120,10 @@ php artisan vendor:publish --tag=cookieconsent-lang
 ```
 
 ```
-resources/lang/vendor/cookieconsent/en/cookieconsent.php
-resources/lang/vendor/cookieconsent/es/cookieconsent.php
-resources/lang/vendor/cookieconsent/en/iframemanager.php
-resources/lang/vendor/cookieconsent/es/iframemanager.php
+lang/vendor/cookieconsent/en/cookieconsent.php
+lang/vendor/cookieconsent/es/cookieconsent.php
+lang/vendor/cookieconsent/en/iframemanager.php
+lang/vendor/cookieconsent/es/iframemanager.php
 ```
 
 The package ships `en` and `es` out of the box. `cookieconsent.php` maps directly onto orestbida's
@@ -335,7 +335,7 @@ Then drop a placeholder wherever you'd normally embed the iframe:
 @iframe('youtube', $videoId, ['params' => 'rel=0', 'thumbnail' => $customThumbnailUrl])
 ```
 
-Per-service copy (`loadBtn`, `notice`, ...) comes from `resources/lang/{locale}/iframemanager.php`, keyed by
+Per-service copy (`loadBtn`, `notice`, ...) comes from `lang/vendor/cookieconsent/{locale}/iframemanager.php`, keyed by
 service name (`youtube` in the example above), just like the main `cookieconsent.php` lang file.
 
 ## Advanced JS / custom callbacks
