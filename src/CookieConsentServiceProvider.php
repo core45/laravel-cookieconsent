@@ -11,6 +11,7 @@ class CookieConsentServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/cookieconsent.php', 'cookieconsent');
         $this->app->singleton(ConfigBuilder::class);
+        $this->app->singleton(CookieConsentManager::class);
     }
 
     public function boot(): void

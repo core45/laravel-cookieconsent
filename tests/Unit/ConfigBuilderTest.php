@@ -1,5 +1,6 @@
 <?php
 
+use Core45\CookieConsent\Facades\CookieConsent;
 use Core45\CookieConsent\Support\ConfigBuilder;
 
 it('passes through arbitrary orestbida keys without a whitelist', function () {
@@ -28,4 +29,13 @@ it('preserves regex sentinel arrays untouched', function () {
 
     expect($built['categories']['analytics']['autoClear']['cookies'][0]['name'])
         ->toBe(['__regex__' => '^_ga', 'flags' => '']);
+});
+
+it('builds a regex sentinel via the facade', function () {
+    expect(CookieConsent::regex('^_ga'))->toBe(['__regex__' => '^_ga', 'flags' => ''])
+        ->and(CookieConsent::regex('^_ga', 'i'))->toBe(['__regex__' => '^_ga', 'flags' => 'i']);
+});
+
+it('exposes the built config via the facade', function () {
+    expect(CookieConsent::config())->toHaveKey('categories');
 });
