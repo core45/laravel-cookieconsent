@@ -2,6 +2,8 @@
 
 namespace Core45\CookieConsent;
 
+use Core45\CookieConsent\Console\ExportConsentCommand;
+use Core45\CookieConsent\Console\PruneConsentCommand;
 use Core45\CookieConsent\Http\LogConsentController;
 use Core45\CookieConsent\Http\Middleware\RequireConsent;
 use Core45\CookieConsent\Support\ConfigBuilder;
@@ -76,5 +78,12 @@ class CookieConsentServiceProvider extends ServiceProvider
         ])
             ->post('cookie-consent/log', LogConsentController::class)
             ->name('cookieconsent.log');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ExportConsentCommand::class,
+                PruneConsentCommand::class,
+            ]);
+        }
     }
 }
