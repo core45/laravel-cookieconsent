@@ -54,6 +54,12 @@ class CookieConsentServiceProvider extends ServiceProvider
 
         Blade::directive('endconsent', fn () => '<?php endif; ?>');
 
+        Blade::directive('cookiescript', function (string $expression) {
+            return "<?php echo \Core45\CookieConsent\Support\ScriptTag::open({$expression}); ?>";
+        });
+
+        Blade::directive('endcookiescript', fn () => '</script>');
+
         $this->app['router']->aliasMiddleware('consent', RequireConsent::class);
     }
 }
