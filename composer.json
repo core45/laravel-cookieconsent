@@ -1,0 +1,38 @@
+{
+    "name": "core45/laravel-cookieconsent",
+    "description": "Laravel wrapper for orestbida/cookieconsent: PHP-first config, lang-file i18n, server-side consent reads, script gating, iframemanager, and a database consent audit trail.",
+    "keywords": ["laravel", "cookieconsent", "gdpr", "cookies", "consent"],
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0|^13.0",
+        "illuminate/http": "^11.0|^12.0|^13.0",
+        "illuminate/database": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
+        "pestphp/pest": "^3.0|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+        "laravel/pint": "^1.13"
+    },
+    "suggest": {
+        "filament/filament": "Adds an optional read-only ConsentLog admin resource (^5.0)."
+    },
+    "autoload": {
+        "psr-4": {"Core45\\CookieConsent\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"Core45\\CookieConsent\\Tests\\": "tests/"}
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Core45\\CookieConsent\\CookieConsentServiceProvider"],
+            "aliases": {"CookieConsent": "Core45\\CookieConsent\\Facades\\CookieConsent"}
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {"pestphp/pest-plugin": true}
+    },
+    "minimum-stability": "stable"
+}
