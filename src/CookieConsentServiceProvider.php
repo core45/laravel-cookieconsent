@@ -25,5 +25,10 @@ class CookieConsentServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../resources/lang' => lang_path('vendor/cookieconsent'),
         ], 'cookieconsent-lang');
+
+        $this->publishes([
+            __DIR__.'/../resources/dist/cookieconsent' => public_path('vendor/cookieconsent'),
+            __DIR__.'/../resources/dist/iframemanager' => public_path('vendor/iframemanager'),
+        ], 'cookieconsent-assets');
     }
 }
