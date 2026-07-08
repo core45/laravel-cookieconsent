@@ -3,6 +3,7 @@
 namespace Core45\CookieConsent;
 
 use Core45\CookieConsent\Support\ConfigBuilder;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class CookieConsentServiceProvider extends ServiceProvider
@@ -30,5 +31,15 @@ class CookieConsentServiceProvider extends ServiceProvider
             __DIR__.'/../resources/dist/cookieconsent' => public_path('vendor/cookieconsent'),
             __DIR__.'/../resources/dist/iframemanager' => public_path('vendor/iframemanager'),
         ], 'cookieconsent-assets');
+
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'cookieconsent');
+
+        $this->publishes([
+            __DIR__.'/../resources/views' => resource_path('views/vendor/cookieconsent'),
+        ], 'cookieconsent-views');
+
+        Blade::directive('cookieconsent', function () {
+            return "<?php echo app(\Core45\CookieConsent\Support\ScriptsRenderer::class)->render(); ?>";
+        });
     }
 }
