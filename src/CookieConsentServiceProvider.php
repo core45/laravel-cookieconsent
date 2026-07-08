@@ -3,6 +3,7 @@
 namespace Core45\CookieConsent;
 
 use Core45\CookieConsent\Support\ConfigBuilder;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
@@ -41,5 +42,9 @@ class CookieConsentServiceProvider extends ServiceProvider
         Blade::directive('cookieconsent', function () {
             return "<?php echo app(\Core45\CookieConsent\Support\ScriptsRenderer::class)->render(); ?>";
         });
+
+        EncryptCookies::except(
+            (string) config('cookieconsent.cookie.name', 'cc_cookie')
+        );
     }
 }
