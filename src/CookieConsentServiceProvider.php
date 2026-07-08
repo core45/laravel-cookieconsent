@@ -2,6 +2,7 @@
 
 namespace Core45\CookieConsent;
 
+use Core45\CookieConsent\Http\Middleware\RequireConsent;
 use Core45\CookieConsent\Support\ConfigBuilder;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Blade;
@@ -46,5 +47,13 @@ class CookieConsentServiceProvider extends ServiceProvider
         EncryptCookies::except(
             (string) config('cookieconsent.cookie.name', 'cc_cookie')
         );
+
+        Blade::directive('consent', function (string $expression) {
+            return "<?php if (app(\Core45\CookieConsent\Support\Consent::class)->has({$expression})): ?>";
+        });
+
+        Blade::directive('endconsent', fn () => '<?php endif; ?>');
+
+        $this->app['router']->aliasMiddleware('consent', RequireConsent::class);
     }
 }
