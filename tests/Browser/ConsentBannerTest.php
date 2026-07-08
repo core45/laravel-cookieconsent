@@ -15,18 +15,18 @@ beforeEach(function () {
     // (it checks navigator.webdriver). Disable that guard for this E2E run.
     config(['cookieconsent.hideFromBots' => false]);
 
-    // @cookieconsent must render after <body> exists: CookieConsent.js
-    // mounts its #cc-main container onto document.body synchronously, so
-    // placing the directive in <head> would run before body is parsed.
+    // @cookieconsent can render in <head>: CookieConsent.js mounts its
+    // #cc-main container onto document.body, but the rendered script defers
+    // CookieConsent.run() to DOMContentLoaded, so it's safe to place the
+    // directive before <body> is parsed.
     Route::middleware('web')->get('/demo', function () {
         return Blade::render(<<<'BLADE'
             <!doctype html>
             <html lang="en">
-            <head><title>Demo</title></head>
+            <head><title>Demo</title>@cookieconsent</head>
             <body>
                 <h1>Demo page</h1>
                 @cookiescript('analytics')document.title = 'analytics-ran';@endcookiescript
-                @cookieconsent
             </body>
             </html>
         BLADE);

@@ -46,4 +46,13 @@ let config = (function revive(node) {
 @endif
 </script>
 @stack('cookieconsent:config')
-<script{!! $nonceAttr !!}>window.CookieConsent.run(config);</script>
+<script{!! $nonceAttr !!}>
+(function () {
+    var start = function () { window.CookieConsent.run(config); };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
+})();
+</script>

@@ -6,22 +6,29 @@ let imConfig = {{ \Illuminate\Support\Js::from($imConfig) }};
 @stack('cookieconsent:iframemanager-config')
 <script{!! $nonceAttr !!}>
 (function () {
-    const im = iframemanager();
-    im.run(imConfig);
+    var start = function () {
+        const im = iframemanager();
+        im.run(imConfig);
 
-    const categoryMap = {{ \Illuminate\Support\Js::from($categoryMap) }};
+        const categoryMap = {{ \Illuminate\Support\Js::from($categoryMap) }};
 
-    const applyConsent = function () {
-        for (const [service, category] of Object.entries(categoryMap)) {
-            if (window.CookieConsent.acceptedCategory(category)) {
-                im.acceptService(service);
-            } else {
-                im.rejectService(service);
+        const applyConsent = function () {
+            for (const [service, category] of Object.entries(categoryMap)) {
+                if (window.CookieConsent.acceptedCategory(category)) {
+                    im.acceptService(service);
+                } else {
+                    im.rejectService(service);
+                }
             }
-        }
-    };
+        };
 
-    window.addEventListener('cc:onConsent', applyConsent);
-    window.addEventListener('cc:onChange', applyConsent);
+        window.addEventListener('cc:onConsent', applyConsent);
+        window.addEventListener('cc:onChange', applyConsent);
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
 })();
 </script>
