@@ -3,6 +3,7 @@
     <testsuites>
         <testsuite name="Unit"><directory>tests/Unit</directory></testsuite>
         <testsuite name="Feature"><directory>tests/Feature</directory></testsuite>
+        <testsuite name="Browser"><directory>tests/Browser</directory></testsuite>
     </testsuites>
     <php>
         <env name="DB_CONNECTION" value="testing"/>

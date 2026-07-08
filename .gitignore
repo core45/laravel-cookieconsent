@@ -2,3 +2,4 @@
 /.phpunit.cache
 composer.lock
 /node_modules
+/tests/Browser/Screenshots
