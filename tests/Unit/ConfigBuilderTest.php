@@ -39,3 +39,22 @@ it('builds a regex sentinel via the facade', function () {
 it('exposes the built config via the facade', function () {
     expect(CookieConsent::config())->toHaveKey('categories');
 });
+
+it('injects the active locale translations', function () {
+    app()->setLocale('es');
+
+    $built = app(ConfigBuilder::class)->build();
+
+    expect($built['language']['default'])->toBe('es')
+        ->and($built['language']['translations'])->toHaveKey('es')
+        ->and($built['language']['translations']['es']['consentModal']['title'])->toBe('Utilizamos cookies')
+        ->and($built['language']['translations'])->not->toHaveKey('en');
+});
+
+it('injects all published locales when translations_mode is all', function () {
+    config()->set('cookieconsent.translations_mode', 'all');
+
+    $built = app(ConfigBuilder::class)->build();
+
+    expect($built['language']['translations'])->toHaveKeys(['en', 'es']);
+});
