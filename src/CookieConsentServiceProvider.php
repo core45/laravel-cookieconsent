@@ -2,10 +2,12 @@
 
 namespace Core45\CookieConsent;
 
+use Core45\CookieConsent\Http\LogConsentController;
 use Core45\CookieConsent\Http\Middleware\RequireConsent;
 use Core45\CookieConsent\Support\ConfigBuilder;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class CookieConsentServiceProvider extends ServiceProvider
@@ -67,5 +69,12 @@ class CookieConsentServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'cookieconsent-migrations');
+
+        Route::middleware([
+            'web',
+            'throttle:'.config('cookieconsent.logging.rate_limit', '30,1'),
+        ])
+            ->post('cookie-consent/log', LogConsentController::class)
+            ->name('cookieconsent.log');
     }
 }
