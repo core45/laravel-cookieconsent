@@ -57,4 +57,40 @@ class ConfigBuilder
 
         return array_values(array_unique($locales));
     }
+
+    public function policyHash(): string
+    {
+        return hash(
+            'sha256',
+            static::canonicalJson($this->build()).(string) config('cookieconsent.logging.policy_version')
+        );
+    }
+
+    /** @param array<array-key, mixed> $value */
+    public static function canonicalJson(array $value): string
+    {
+        return json_encode(
+            static::sortRecursively($value),
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
+        );
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $value
+     * @return array<array-key, mixed>
+     */
+    protected static function sortRecursively(array $value): array
+    {
+        if (! array_is_list($value)) {
+            ksort($value);
+        }
+
+        foreach ($value as $key => $item) {
+            if (is_array($item)) {
+                $value[$key] = static::sortRecursively($item);
+            }
+        }
+
+        return $value;
+    }
 }

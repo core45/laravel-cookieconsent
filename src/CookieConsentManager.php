@@ -23,4 +23,9 @@ class CookieConsentManager
     {
         return $this->builder->build();
     }
+
+    public function policyHash(): string
+    {
+        return $this->builder->policyHash();
+    }
 }
