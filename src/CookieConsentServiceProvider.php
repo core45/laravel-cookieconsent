@@ -64,6 +64,14 @@ class CookieConsentServiceProvider extends ServiceProvider
 
         Blade::directive('endcookiescript', fn () => '</script>');
 
+        Blade::directive('iframemanager', function () {
+            return "<?php echo app(\Core45\CookieConsent\Support\IframemanagerRenderer::class)->render(); ?>";
+        });
+
+        Blade::directive('iframe', function (string $expression) {
+            return "<?php echo \Core45\CookieConsent\Support\IframeTag::render({$expression}); ?>";
+        });
+
         $this->app['router']->aliasMiddleware('consent', RequireConsent::class);
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
