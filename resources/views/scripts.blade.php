@@ -38,6 +38,10 @@ let config = (function revive(node) {
                 languageCode: cookie.languageCode,
                 payload: cookie
             })
+        }).catch(function (e) {
+            if (window.console && console.warn) {
+                console.warn('cookieconsent: failed to log consent', e);
+            }
         });
     };
     window.addEventListener('cc:onFirstConsent', function () { logConsent('first_consent'); });

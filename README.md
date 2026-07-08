@@ -3,7 +3,8 @@
 A Laravel wrapper for [orestbida/cookieconsent v3](https://cookieconsent.orestbida.com/) and its companion
 [iframemanager](https://github.com/orestbida/iframemanager). It gives you a PHP-first configuration file instead of
 a hand-written JS blob, i18n through normal Laravel lang files, server-side reads of what the visitor consented to,
-Blade-driven script gating, and an append-only database audit trail of every consent decision.
+Blade-driven script gating, and a database audit trail of every consent decision whose model write path is
+append-only.
 
 | Capability | What you get |
 |---|---|
@@ -11,7 +12,7 @@ Blade-driven script gating, and an append-only database audit trail of every con
 | Translations | Standard Laravel lang files (`lang/vendor/cookieconsent/{locale}/cookieconsent.php`), `active` or `all` locales |
 | Script gating | `@cookiescript` Blade directives that emit blocked `<script type="text/plain">` tags |
 | Server-side reads | `@consent`/`Consent`/`CookieConsent` facade + a `consent:*` route middleware |
-| Audit trail | An append-only `consent_logs` table, export/prune Artisan commands, optional Filament resource |
+| Audit trail | A `consent_logs` table with an append-only model write path, export/prune Artisan commands, optional Filament resource |
 | Media consent | An `@iframemanager` / `@iframe()` integration for YouTube-style click-to-load embeds |
 | Security | Optional CSP nonce injection for every script tag the package renders |
 
@@ -200,6 +201,12 @@ Route::get('/dashboard/analytics', AnalyticsController::class)
     ->middleware('consent:analytics');
 ```
 
+> **Not an authorization boundary.** `@consent`, `Consent::has()`, and the `consent:*` middleware all read the
+> unencrypted `cc_cookie` (it's excluded from `EncryptCookies` because orestbida/cookieconsent needs to read/write
+> it as plaintext client-side). A visitor can freely edit that cookie's contents. Treat these checks as a UX/
+> compliance gate that reflects the visitor's own stated preference — never as access control for sensitive
+> resources; use real authorization (policies, gates, middleware backed by server-side state) for that.
+
 > **`useLocalStorage` warning.** If you set `cookie.useLocalStorage` to `true` in the config, orestbida/cookieconsent
 > stores consent in the browser's `localStorage` instead of a cookie. That value never reaches the server, so
 > `@consent`/`@endconsent`, `Consent::has()`, `CookieConsent::has()`, and the `consent:*` middleware will **always**
@@ -211,8 +218,11 @@ Route::get('/dashboard/analytics', AnalyticsController::class)
 ## Consent audit trail
 
 Every accept/change interaction the banner fires (`cc:onFirstConsent`, `cc:onChange`) is POSTed to an internal
-`cookieconsent.log` route and written as a new, immutable row in `consent_logs`. The table is append-only: the
-`ConsentLog` model throws if you try to update an existing row.
+`cookieconsent.log` route and written as a new row in `consent_logs`. The `ConsentLog` model's write path is
+append-only: it throws if you try to update an existing row through the model. This guard is model-instance-level
+only — it does **not** stop raw `DB::table('consent_logs')->update(...)`, a mass `ConsentLog::where(...)->update(...)`,
+or `delete()`, all of which bypass Eloquent's `saving` hook. For a hard guarantee, restrict UPDATE/DELETE grants on
+the `consent_logs` table at the database user level, or add a database trigger that rejects them outright.
 
 | Column | Contents |
 |---|---|
@@ -228,6 +238,9 @@ Every accept/change interaction the banner fires (`cc:onFirstConsent`, `cc:onCha
 
 Evidentiary fields (`ip_address`, `user_agent`, `user_type`/`user_id`, `policy_hash`) are always derived server-side
 from the request — they are never trusted from client input.
+
+> **Best-effort delivery.** The consent-log POST is fire-and-forget: a failed request (network error, 5xx, rate
+> limit) is logged to the browser console, not retried, and does not block or affect the banner UI in any way.
 
 ### PII configuration
 
@@ -264,6 +277,11 @@ php artisan cookieconsent:export --format=csv > consent-evidence.csv
 php artisan cookieconsent:export --format=json --user=42
 php artisan cookieconsent:export --consent-id=abc123 --from=2026-01-01 --to=2026-06-30
 ```
+
+`--to` accepts a date-only value (as above) and treats it as inclusive of the whole day — a row created at
+`2026-06-30 23:00` is included, not excluded by an implicit midnight bound. `--user` matches `user_id` only; it is
+**not** scoped by `user_type`, so ids can collide across different morph types (e.g. an `Admin` and a `Customer`
+both with id `42`).
 
 The underlying `ConsentLog` model exposes matching Eloquent scopes:
 

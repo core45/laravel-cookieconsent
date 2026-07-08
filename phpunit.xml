@@ -2,7 +2,10 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="vendor/autoload.php" colors="true">
     <testsuites>
         <testsuite name="Unit"><directory>tests/Unit</directory></testsuite>
-        <testsuite name="Feature"><directory>tests/Feature</directory></testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+            <directory>tests/FeatureCsrfDisabled</directory>
+        </testsuite>
         <testsuite name="Browser"><directory>tests/Browser</directory></testsuite>
     </testsuites>
     <php>

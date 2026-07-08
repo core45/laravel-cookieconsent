@@ -36,6 +36,18 @@ it('exports csv with a header row', function () {
         ->assertSuccessful();
 });
 
+it('includes rows created later in the day for a date-only --to bound', function () {
+    $today = now()->startOfDay();
+    seedLog(['consent_id' => 'same-day', 'created_at' => $today->copy()->addHours(14)]);
+
+    $this->artisan('cookieconsent:export', [
+        '--from' => $today->toDateString(),
+        '--to' => $today->toDateString(),
+    ])
+        ->expectsOutputToContain('"consent_id":"same-day"')
+        ->assertSuccessful();
+});
+
 it('prunes only when retention is configured', function () {
     seedLog(['created_at' => now()->subDays(400)]);
     seedLog();

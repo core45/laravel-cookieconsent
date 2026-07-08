@@ -2,6 +2,7 @@
 
 use Core45\CookieConsent\Models\ConsentLog;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
@@ -117,4 +118,20 @@ it('returns 404 when logging is disabled', function () {
     config()->set('cookieconsent.logging.enabled', false);
 
     $this->postJson('/cookie-consent/log', validPayload())->assertNotFound();
+});
+
+it('keeps CSRF validation on the log route by default', function () {
+    // Mirrors tests/FeatureCsrfDisabled/LogEndpointCsrfDisabledTest.php:
+    // with the default config (logging.csrf === true), the route must NOT
+    // exclude CSRF, i.e. resolveMiddleware still returns it.
+    $route = Route::getRoutes()->getByName('cookieconsent.log');
+
+    expect($route->excludedMiddleware())->toBe([]);
+
+    $resolved = app('router')->resolveMiddleware(
+        [PreventRequestForgery::class],
+        $route->excludedMiddleware(),
+    );
+
+    expect($resolved)->toContain(PreventRequestForgery::class);
 });

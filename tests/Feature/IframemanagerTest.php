@@ -22,13 +22,24 @@ it('renders im.run with localized services and CookieConsent glue', function () 
 
     $html = $this->get('/_im')->getContent();
 
+    // Js::from() hex-escapes double quotes (JSON_HEX_QUOT), so a literal
+    // '"category"' never appears in the rendered output either way —
+    // asserting its absence alone is hollow. If the `category` key ever
+    // leaked into imConfig, it would render as this escaped form instead
+    // (verified empirically against Js::from(['category' => 'x'])). Built
+    // via chr(92) rather than typed as """ so the backslash survives
+    // untouched through this source file.
+    $escapedCategoryKey = chr(92).'u0022category'.chr(92).'u0022';
+
     expect($html)
         ->toContain('vendor/iframemanager/iframemanager.js')
         ->toContain('im.run(imConfig)')
         ->toContain('Cargar vídeo')                    // localized loadBtn
         ->toContain('cc:onConsent')
         ->toContain('acceptService')
-        ->not->toContain('"category"');                 // package-only key stripped
+        ->not->toContain($escapedCategoryKey)           // package-only key stripped from imConfig
+        ->toContain('categoryMap')
+        ->toContain('analytics');                       // category value still present, via categoryMap
 });
 
 it('renders nothing when disabled', function () {
