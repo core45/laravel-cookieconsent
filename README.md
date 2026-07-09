@@ -6,6 +6,11 @@ a hand-written JS blob, i18n through normal Laravel lang files, server-side read
 Blade-driven script gating, and a database audit trail of every consent decision whose model write path is
 append-only.
 
+The package bundles orestbida/cookieconsent **3.1.0** and iframemanager **1.3.0**, served self-hosted from
+`resources/dist` / the published `vendor/cookieconsent` assets — no CDN request is made. Upstream updates are
+re-vendored and checksum-verified by the maintainers, then shipped as a new package release; there is no
+auto-update mechanism, so pin the package version if you need a specific upstream JS version.
+
 | Capability | What you get |
 |---|---|
 | Configuration | A single `config/cookieconsent.php` array, passed through to `CookieConsent.run()` almost verbatim |
@@ -224,6 +229,23 @@ only — it does **not** stop raw `DB::table('consent_logs')->update(...)`, a ma
 or `delete()`, all of which bypass Eloquent's `saving` hook. For a hard guarantee, restrict UPDATE/DELETE grants on
 the `consent_logs` table at the database user level, or add a database trigger that rejects them outright.
 
+#### Hardening the audit trail at the database level
+
+The model guard only covers writes made through Eloquent instances. For a guarantee that holds even against raw
+SQL, `DB::table(...)`, or a compromised app process, revoke `UPDATE`/`DELETE` on `consent_logs` from the
+application's database user and grant it only `SELECT`/`INSERT`:
+
+```sql
+-- MySQL
+REVOKE UPDATE, DELETE ON consent_logs FROM 'app_user'@'%';
+
+-- PostgreSQL
+REVOKE UPDATE, DELETE ON consent_logs FROM app_user;
+```
+
+The `cookieconsent:prune` command deletes expired rows, so if you apply this hardening, run pruning under a
+separate, more privileged database role/connection instead of the app's normal user.
+
 | Column | Contents |
 |---|---|
 | `consent_id`, `revision` | orestbida's own consent identifier and config revision |
@@ -239,8 +261,12 @@ the `consent_logs` table at the database user level, or add a database trigger t
 Evidentiary fields (`ip_address`, `user_agent`, `user_type`/`user_id`, `policy_hash`) are always derived server-side
 from the request — they are never trusted from client input.
 
-> **Best-effort delivery.** The consent-log POST is fire-and-forget: a failed request (network error, 5xx, rate
-> limit) is logged to the browser console, not retried, and does not block or affect the banner UI in any way.
+> **Delivery.** The consent-log POST does not block or affect the banner UI. It retries transient failures
+> (network errors, `429`, `5xx`) up to twice with backoff, and each event carries a server-checked idempotency key
+> so a retried or duplicated delivery never creates a second row. If the tab closes or navigates away before the
+> request completes, the pending payload is sent as a last-chance `navigator.sendBeacon()` call on `pagehide`/tab-
+> hidden. Non-retryable client errors (other `4xx`) and exhausted retries are logged to the browser console, not
+> retried further.
 
 ### PII configuration
 
@@ -275,22 +301,31 @@ from the request — they are never trusted from client input.
 ```bash
 php artisan cookieconsent:export --format=csv > consent-evidence.csv
 php artisan cookieconsent:export --format=json --user=42
+php artisan cookieconsent:export --format=json --user=42 --user-type="App\\Models\\Admin"
 php artisan cookieconsent:export --consent-id=abc123 --from=2026-01-01 --to=2026-06-30
 ```
 
 `--to` accepts a date-only value (as above) and treats it as inclusive of the whole day — a row created at
-`2026-06-30 23:00` is included, not excluded by an implicit midnight bound. `--user` matches `user_id` only; it is
-**not** scoped by `user_type`, so ids can collide across different morph types (e.g. an `Admin` and a `Customer`
-both with id `42`).
+`2026-06-30 23:00` is included, not excluded by an implicit midnight bound. `--user` alone matches `user_id` only;
+it is **not** scoped by `user_type`, so ids can collide across different morph types (e.g. an `Admin` and a
+`Customer` both with id `42`). Pass `--user-type` alongside `--user` to scope the match to a specific morph class.
+`--format` only accepts `json` or `csv`; anything else fails with an error and a non-zero exit code.
 
 The underlying `ConsentLog` model exposes matching Eloquent scopes:
 
 ```php
 ConsentLog::forConsentId('abc123')->get();
 ConsentLog::forUser($user)->get();
-ConsentLog::between('2026-01-01', '2026-06-30')->get();
+ConsentLog::between('2026-01-01', '2026-06-30 23:59:59')->get();
+// or, with Carbon:
+ConsentLog::between('2026-01-01', now()->parse('2026-06-30')->endOfDay())->get();
 ConsentLog::latestPerConsentId()->get(); // one row per consent_id, the most recent
 ```
+
+> **`between()` bounds are used verbatim.** Unlike the export command's `--to`, the `between()` scope passes its
+> bounds straight to `whereBetween('created_at', [$from, $to])` — it does **not** auto-expand a date-only end bound
+> to end-of-day. `ConsentLog::between('2026-01-01', '2026-06-30')` excludes anything after `2026-06-30 00:00:00`.
+> Pass an explicit time (`'2026-06-30 23:59:59'`) or a Carbon `endOfDay()` instance to include the whole day.
 
 ### Retention
 

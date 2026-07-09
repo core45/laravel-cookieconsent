@@ -48,6 +48,26 @@ it('includes rows created later in the day for a date-only --to bound', function
         ->assertSuccessful();
 });
 
+it('filters by user id and user type together', function () {
+    seedLog(['user_type' => 'App\\Models\\Admin', 'user_id' => 42]);
+    seedLog(['consent_id' => 'other', 'user_type' => 'App\\Models\\Customer', 'user_id' => 42]);
+
+    $this->artisan('cookieconsent:export', [
+        '--user' => 42,
+        '--user-type' => 'App\\Models\\Admin',
+    ])
+        ->expectsOutputToContain('Admin')
+        ->doesntExpectOutputToContain('Customer')
+        ->assertSuccessful();
+});
+
+it('rejects an invalid --format', function () {
+    seedLog();
+
+    $this->artisan('cookieconsent:export', ['--format' => 'xml'])
+        ->assertFailed();
+});
+
 it('prunes only when retention is configured', function () {
     seedLog(['created_at' => now()->subDays(400)]);
     seedLog();

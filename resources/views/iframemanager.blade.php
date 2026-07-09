@@ -24,6 +24,10 @@ let imConfig = {{ \Illuminate\Support\Js::from($imConfig) }};
 
         window.addEventListener('cc:onConsent', applyConsent);
         window.addEventListener('cc:onChange', applyConsent);
+
+        if (window.CookieConsent && window.CookieConsent.validConsent && window.CookieConsent.validConsent()) {
+            applyConsent();
+        }
     };
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', start);

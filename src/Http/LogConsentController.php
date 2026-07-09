@@ -4,6 +4,7 @@ namespace Core45\CookieConsent\Http;
 
 use Core45\CookieConsent\Models\ConsentLog;
 use Core45\CookieConsent\Support\ConfigBuilder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -29,7 +30,14 @@ class LogConsentController
             'acceptedServices' => ['sometimes', 'array'],
             'languageCode' => ['nullable', 'string', 'max:12'],
             'payload' => ['required', 'array'],
+            'idempotencyKey' => ['nullable', 'string', 'max:64'],
         ]);
+
+        $idempotencyKey = $validated['idempotencyKey'] ?? null;
+
+        if ($idempotencyKey !== null && ConsentLog::where('idempotency_key', $idempotencyKey)->exists()) {
+            return response()->json(['ok' => true, 'duplicate' => true], 200);
+        }
 
         $log = new ConsentLog([
             'consent_id' => $validated['consentId'],
@@ -41,6 +49,7 @@ class LogConsentController
             'revision' => $validated['revision'],
             'language_code' => $validated['languageCode'] ?? null,
             'payload' => $validated['payload'],
+            'idempotency_key' => $idempotencyKey,
         ]);
 
         $log->ip_address = match (config('cookieconsent.logging.capture_ip', 'raw')) {
@@ -60,7 +69,12 @@ class LogConsentController
 
         $log->policy_version = config('cookieconsent.logging.policy_version');
         $log->policy_hash = $builder->policyHash();
-        $log->save();
+
+        try {
+            $log->save();
+        } catch (UniqueConstraintViolationException) {
+            return response()->json(['ok' => true, 'duplicate' => true], 200);
+        }
 
         return response()->json(['ok' => true], 201);
     }

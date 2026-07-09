@@ -120,6 +120,22 @@ it('returns 404 when logging is disabled', function () {
     $this->postJson('/cookie-consent/log', validPayload())->assertNotFound();
 });
 
+it('is idempotent when the same idempotency key is posted twice', function () {
+    $payload = validPayload(['idempotencyKey' => 'same-key-123']);
+
+    $this->postJson(route('cookieconsent.log'), $payload)->assertCreated();
+    $second = $this->postJson(route('cookieconsent.log'), $payload);
+
+    $second->assertOk()->assertJson(['ok' => true, 'duplicate' => true]);
+    expect(ConsentLog::count())->toBe(1);
+});
+
+it('still logs successfully without an idempotency key', function () {
+    $this->postJson(route('cookieconsent.log'), validPayload())->assertCreated();
+
+    expect(ConsentLog::count())->toBe(1);
+});
+
 it('keeps CSRF validation on the log route by default', function () {
     // Mirrors tests/FeatureCsrfDisabled/LogEndpointCsrfDisabledTest.php:
     // with the default config (logging.csrf === true), the route must NOT

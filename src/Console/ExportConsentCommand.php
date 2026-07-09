@@ -9,7 +9,8 @@ use Illuminate\Console\Command;
 class ExportConsentCommand extends Command
 {
     protected $signature = 'cookieconsent:export
-        {--user= : Filter by user id — matches user_id only, not scoped by user_type, so ids can collide across morph types}
+        {--user= : Filter by user id — matches user_id only unless --user-type is also given, so ids can collide across morph types}
+        {--user-type= : Filter by user_type (morph class); combine with --user to scope the id to a specific morph type}
         {--consent-id= : Filter by orestbida consent id}
         {--from= : Only rows created on/after this date}
         {--to= : Only rows created on/before this date (date-only values are treated as end-of-day, so the whole day is included)}
@@ -19,6 +20,14 @@ class ExportConsentCommand extends Command
 
     public function handle(): int
     {
+        $format = (string) $this->option('format');
+
+        if (! in_array($format, ['json', 'csv'], true)) {
+            $this->error("Invalid --format \"{$format}\". Expected \"json\" or \"csv\".");
+
+            return self::FAILURE;
+        }
+
         $query = ConsentLog::query()->orderBy('id');
 
         if ($this->option('consent-id') !== null) {
@@ -27,6 +36,10 @@ class ExportConsentCommand extends Command
 
         if ($this->option('user') !== null) {
             $query->where('user_id', $this->option('user'));
+        }
+
+        if ($this->option('user-type') !== null) {
+            $query->where('user_type', $this->option('user-type'));
         }
 
         if ($this->option('from') !== null || $this->option('to') !== null) {
@@ -38,7 +51,6 @@ class ExportConsentCommand extends Command
             );
         }
 
-        $format = (string) $this->option('format');
         $headerWritten = false;
 
         $query->chunkById(500, function ($logs) use ($format, &$headerWritten): void {

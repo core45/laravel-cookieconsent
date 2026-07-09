@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('ip_address', 64)->nullable();
             $table->text('user_agent')->nullable();
             $table->json('payload');
+            $table->string('idempotency_key', 64)->nullable()->unique();
             $table->timestamp('created_at')->index();
         });
     }
