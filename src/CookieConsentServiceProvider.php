@@ -66,6 +66,10 @@ class CookieConsentServiceProvider extends ServiceProvider
 
         Blade::directive('endcookiescript', fn () => '</script>');
 
+        Blade::directive('cookiepreferences', function (string $expression) {
+            return "<?php echo \Core45\CookieConsent\Support\PreferencesButton::render({$expression}); ?>";
+        });
+
         Blade::directive('iframemanager', function () {
             return "<?php echo app(\Core45\CookieConsent\Support\IframemanagerRenderer::class)->render(); ?>";
         });

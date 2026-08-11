@@ -13,7 +13,7 @@ Use core45/laravel-cookieconsent to add a GDPR-compliant cookie banner (orestbid
 
 ## When to Activate
 - Activate when adding or configuring a cookie banner, consent modal, or GDPR/ePrivacy consent flow.
-- Activate when code references `@cookieconsent`, `@cookiescript`, `@consent`, `@iframemanager`, `@iframe`, the `CookieConsent` facade, `consent:*` middleware, or the `ConsentLog` model.
+- Activate when code references `@cookieconsent`, `@cookiescript`, `@consent`, `@cookiepreferences`, `@iframemanager`, `@iframe`, the `CookieConsent` facade, `consent:*` middleware, or the `ConsentLog` model.
 - Activate when gating analytics/marketing scripts or third-party embeds (YouTube, maps) behind consent.
 
 ## Scope
@@ -51,6 +51,14 @@ Add `@cookieconsent` to the layout's `<head>` (recommended placement; the script
     // cleanup
 @endcookiescript
 ```
+
+### Reopening the Preferences Modal
+The banner never reappears on its own after it is answered, so every site needs a withdrawal trigger (GDPR: withdrawing must be as easy as giving).
+```blade
+@cookiepreferences
+@cookiepreferences('Cookie settings', ['class' => 'footer__link'])
+```
+Renders `<button type="button" data-cc="show-preferencesModal">…</button>`. Default label is the `consentModal.showPreferencesBtn` translation line (fallback `Manage preferences`). `data-cc`, `type`, and `on*` handlers are dropped from the attribute array. Any element with `data-cc="show-preferencesModal"` works too. Listeners bind once at `CookieConsent.run()` — for triggers injected later (Livewire, Turbo), call `window.CookieConsent.showPreferences()` instead.
 
 ### Server-Side Consent Reads
 ```blade

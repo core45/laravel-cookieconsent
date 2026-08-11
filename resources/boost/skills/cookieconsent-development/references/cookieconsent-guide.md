@@ -86,6 +86,21 @@ Emits blocked `<script type="text/plain" data-category="...">` tags that orestbi
 
 Blade quirk: `@endcookiescript` must not be glued directly onto a word character (`someCode@endcookiescript` won't compile as a directive boundary).
 
+## Reopening preferences (`@cookiepreferences`)
+
+The banner never auto-shows again once answered, so a withdrawal trigger is mandatory (GDPR: withdrawing consent must be as easy as giving it).
+
+```blade
+@cookiepreferences
+@cookiepreferences('Cookie settings', ['class' => 'footer__link', 'aria-label' => 'Open cookie settings'])
+```
+
+Emits `<button type="button" data-cc="show-preferencesModal">…</button>`. Default label is the `consentModal.showPreferencesBtn` translation line (falls back to `Manage preferences` when that line is absent), so it follows the locale with no extra strings. Attribute values are escaped; `true` renders a bare attribute, `false`/`null` omits it; `data-cc`, `type`, and any `on*` handler are dropped.
+
+Any element carrying the attribute works (`<a href="#" data-cc="show-preferencesModal">`). Caveat: orestbida binds these listeners once during `CookieConsent.run()` — a trigger inserted afterwards (Livewire re-render, Turbo/htmx swap) is not wired up; call `window.CookieConsent.showPreferences()` from your own handler there.
+
+Saving new choices fires `cc:onChange`, logged as a `change` action when logging is enabled.
+
 ## Server-side consent
 
 ```blade

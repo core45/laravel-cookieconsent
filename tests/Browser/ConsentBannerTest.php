@@ -27,6 +27,8 @@ beforeEach(function () {
             <body>
                 <h1>Demo page</h1>
                 @cookiescript('analytics')document.title = 'analytics-ran';@endcookiescript
+                {{-- Custom label: the consent modal already has a "Manage preferences" button. --}}
+                @cookiepreferences('Cookie settings')
             </body>
             </html>
         BLADE);
@@ -42,6 +44,16 @@ it('shows the banner, accepts, hides it, and writes a consent log', function () 
 
     expect(ConsentLog::count())->toBe(1)
         ->and(ConsentLog::sole()->accepted_categories)->toContain('analytics');
+});
+
+it('lets the visitor reopen preferences after answering the banner', function () {
+    $page = visit('/demo');
+
+    $page->click('Accept all')
+        ->assertDontSee('We use cookies')
+        ->assertDontSee('Cookie preferences')
+        ->click('Cookie settings')
+        ->assertSee('Cookie preferences');
 });
 
 it('keeps gated scripts inert until consent', function () {

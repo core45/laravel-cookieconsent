@@ -179,6 +179,48 @@ HTML attributes as a third argument:
 > rarely an issue in practice because inline scripts almost always end in `;`, `}`, or a newline before the closing
 > directive, as in the examples above.
 
+## Letting visitors change their mind
+
+Once the banner has been answered it never shows again on its own, so the site must provide a way back into the
+preferences modal — GDPR requires that consent be as easy to withdraw as it is to give. `@cookiepreferences`
+renders that trigger:
+
+```blade
+@cookiepreferences
+```
+
+It emits a button carrying orestbida's `data-cc="show-preferencesModal"` hook:
+
+```html
+<button type="button" data-cc="show-preferencesModal">Manage preferences</button>
+```
+
+The default label is the `consentModal.showPreferencesBtn` translation line, so it follows the current locale with
+no extra strings to publish (falling back to `Manage preferences` if you've removed that line — sites offering only
+accept-all/reject-all in the banner do). Pass your own label and any HTML attributes to style it:
+
+```blade
+@cookiepreferences('Cookie settings', ['class' => 'footer__link', 'aria-label' => 'Open cookie settings'])
+```
+
+Attribute values are escaped; `true` renders a bare attribute and `false`/`null` omits it. `data-cc` and `type` are
+owned by the directive and cannot be overridden, so the trigger can't be silently detached from the modal. Inline
+`on*` event handlers are dropped — the nonce-based CSP this package supports would block them anyway.
+
+Put it wherever your privacy links live — footer, cookie policy page, account settings. Reopening the modal and
+saving new choices fires `cc:onChange`, which is logged as a `change` action when the [audit
+trail](#consent-audit-trail) is enabled.
+
+Any element works, not just the directive's button — the attribute is what matters:
+
+```blade
+<a href="#" data-cc="show-preferencesModal">Cookie settings</a>
+```
+
+> **Dynamically inserted triggers:** the library binds these listeners once, when `CookieConsent.run()` executes.
+> A trigger injected later (Livewire re-render, Turbo/htmx swap, modal opened from JS) won't be wired up. Call
+> `window.CookieConsent.showPreferences()` from your own handler in that case.
+
 ## Server-side consent
 
 Read what the visitor has consented to from PHP, without waiting for JavaScript:
