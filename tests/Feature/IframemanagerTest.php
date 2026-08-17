@@ -33,11 +33,13 @@ it('renders im.run with localized services and CookieConsent glue', function () 
 
     // Laravel 13 added JSON_UNESCAPED_UNICODE to Js::REQUIRED_FLAGS; Laravel 12
     // does not set it. The same accented translation therefore reaches the page
-    // literally on 13 and as a \uXXXX escape on 12. Both decode to the same
-    // string in the browser, so resolve the escapes before asserting rather
-    // than pinning this test to one framework version.
+    // literally on 13 and as an escape on 12, and because Js::from() wraps the
+    // JSON in JSON.parse('...') that escape arrives double-backslashed. Both
+    // forms decode to the same string in the browser, so collapse any run of
+    // backslashes before the \uXXXX sequence and resolve it, rather than
+    // pinning this test to one framework version.
     $decoded = preg_replace_callback(
-        '/\\\\u([0-9a-fA-F]{4})/',
+        '/\\\\+u([0-9a-fA-F]{4})/',
         fn (array $m): string => mb_chr((int) hexdec($m[1]), 'UTF-8'),
         $html
     );
