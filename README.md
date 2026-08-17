@@ -136,7 +136,8 @@ lang/vendor/cookieconsent/{locale}/cookieconsent.php
 lang/vendor/cookieconsent/{locale}/iframemanager.php
 ```
 
-The package ships `de`, `en`, `es`, `hr`, `it`, `pl`, `pt`, `sl`, `sv` and `uk` out of the box. `cookieconsent.php`
+The package ships `bg`, `cs`, `de`, `el`, `en`, `es`, `et`, `fi`, `fr`, `hr`, `hu`, `it`, `lt`, `lv`, `nl`, `pl`, `pt`,
+`sk`, `sl`, `sq`, `sv` and `uk` out of the box. `cookieconsent.php`
 maps directly onto orestbida's `language.translations.{locale}` shape (`consentModal`, `preferencesModal`, etc);
 `iframemanager.php` supplies the per-service `loadBtn`/`notice`/... strings.
 
@@ -398,7 +399,13 @@ use Core45\CookieConsent\Filament\CookieConsentFilamentPlugin;
 $panel->plugin(CookieConsentFilamentPlugin::make());
 ```
 
-The resource has no create/edit pages — consent logs are evidence, not editable records.
+The resource has no create/edit pages — consent logs are evidence, not editable records. Each row opens a
+read-only modal showing every stored field, including `rejected_categories`, `accepted_services`, `policy_hash`
+and the raw `payload`.
+
+That modal is a `ViewAction`, which is authorized by a `view()` policy method. If you run Filament's
+`strictAuthorization()` and have a `ConsentLog` policy, it now needs `view()` alongside `viewAny()`, otherwise
+Filament throws a `LogicException`. Apps with no policy, or without strict authorization, are unaffected.
 
 ## iframemanager
 
