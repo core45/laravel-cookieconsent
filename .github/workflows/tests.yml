@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         php: ['8.4', '8.5']
-        laravel: ['11.*', '12.*', '13.*']
+        laravel: ['12.*', '13.*']
         experimental: [false]
         include:
           # PHP 8.6 is not released yet; nightly builds it from master. Advisory
@@ -35,6 +35,21 @@ jobs:
           EXPERIMENTAL: ${{ matrix.experimental }}
         run: |
           composer require "illuminate/support:$LARAVEL" --no-interaction --no-update
+          if [ "$LARAVEL" = "12.*" ]; then
+            # The default dev toolchain targets Laravel 13: pest 5 and
+            # testbench 11 both require laravel/framework ^13.23.0. Step the
+            # test tooling back one major for this row. pest-plugin-rector only
+            # exists on the 5.x line and conflicts with pest <5, and the
+            # explicit phpunit pin conflicts with testbench 10, so both go.
+            composer require --dev \
+              "orchestra/testbench:^10.0" \
+              "pestphp/pest:^4.1" \
+              "pestphp/pest-plugin-laravel:^4.0" \
+              "pestphp/pest-plugin-browser:^4.0" \
+              --no-interaction --no-update
+            composer remove --dev phpunit/phpunit pestphp/pest-plugin-rector \
+              --no-interaction --no-update
+          fi
           if [ "$EXPERIMENTAL" = "true" ]; then
             # Parts of the test toolchain declare an upper PHP bound and so
             # refuse to install on an unreleased version: filament pulls

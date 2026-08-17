@@ -23,8 +23,11 @@ auto-update mechanism, so pin the package version if you need a specific upstrea
 
 ## Installation
 
-Requires **PHP 8.4+** and Laravel 11, 12 or 13. On PHP 8.2 or 8.3, stay on the `1.x` line
-(`composer require core45/laravel-cookieconsent:^1.1`).
+Requires **PHP 8.4+** and **Laravel 12 or 13**.
+
+Laravel 11 support was dropped in 3.0: every `laravel/framework` 11.x release is now covered by unfixed
+security advisories, so Composer refuses to install it by default. On PHP 8.2/8.3 use `^1.1`; on Laravel 11
+use `^2.0`, understanding that the framework underneath it is out of security support.
 
 ```bash
 composer require core45/laravel-cookieconsent
