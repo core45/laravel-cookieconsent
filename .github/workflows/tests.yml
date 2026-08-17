@@ -35,13 +35,20 @@ jobs:
           EXPERIMENTAL: ${{ matrix.experimental }}
         run: |
           composer require "illuminate/support:$LARAVEL" --no-interaction --no-update
-          # filament pulls nette/php-generator, which caps at PHP 8.5 and so
-          # blocks the unreleased-PHP row. The Filament tests self-skip when it
-          # is absent, so drop it there rather than lose the whole row.
           if [ "$EXPERIMENTAL" = "true" ]; then
+            # Parts of the test toolchain declare an upper PHP bound and so
+            # refuse to install on an unreleased version: filament pulls
+            # nette/php-generator (php 8.1 - 8.5), and pest pulls
+            # brianium/paratest (~8.4.0 || ~8.5.0). Drop the optional Filament
+            # dependency, whose tests already self-skip when it is absent, and
+            # ignore the remaining platform bounds so the suite actually runs
+            # against the new engine. This row is advisory and cannot fail the
+            # build.
             composer remove filament/filament --dev --no-interaction --no-update
+            composer update --prefer-dist --no-interaction --ignore-platform-req=php
+          else
+            composer update --prefer-dist --no-interaction
           fi
-          composer update --prefer-dist --no-interaction
       - name: Run Pint
         run: vendor/bin/pint --test
       - name: Run tests (Unit + Feature)
