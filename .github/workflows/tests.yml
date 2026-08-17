@@ -30,8 +30,17 @@ jobs:
           php-version: ${{ matrix.php }}
           coverage: none
       - name: Install dependencies
+        env:
+          LARAVEL: ${{ matrix.laravel }}
+          EXPERIMENTAL: ${{ matrix.experimental }}
         run: |
-          composer require "illuminate/support:${{ matrix.laravel }}" --no-interaction --no-update
+          composer require "illuminate/support:$LARAVEL" --no-interaction --no-update
+          # filament pulls nette/php-generator, which caps at PHP 8.5 and so
+          # blocks the unreleased-PHP row. The Filament tests self-skip when it
+          # is absent, so drop it there rather than lose the whole row.
+          if [ "$EXPERIMENTAL" = "true" ]; then
+            composer remove filament/filament --dev --no-interaction --no-update
+          fi
           composer update --prefer-dist --no-interaction
       - name: Run Pint
         run: vendor/bin/pint --test
