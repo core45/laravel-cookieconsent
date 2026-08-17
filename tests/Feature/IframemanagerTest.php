@@ -31,10 +31,22 @@ it('renders im.run with localized services and CookieConsent glue', function () 
     // untouched through this source file.
     $escapedCategoryKey = chr(92).'u0022category'.chr(92).'u0022';
 
+    // Laravel 13 added JSON_UNESCAPED_UNICODE to Js::REQUIRED_FLAGS; Laravel 12
+    // does not set it. The same accented translation therefore reaches the page
+    // literally on 13 and as a \uXXXX escape on 12. Both decode to the same
+    // string in the browser, so resolve the escapes before asserting rather
+    // than pinning this test to one framework version.
+    $decoded = preg_replace_callback(
+        '/\\\\u([0-9a-fA-F]{4})/',
+        fn (array $m): string => mb_chr((int) hexdec($m[1]), 'UTF-8'),
+        $html
+    );
+
+    expect($decoded)->toContain('Cargar vídeo');       // localized loadBtn
+
     expect($html)
         ->toContain('vendor/iframemanager/iframemanager.js')
         ->toContain('im.run(imConfig)')
-        ->toContain('Cargar vídeo')                    // localized loadBtn
         ->toContain('cc:onConsent')
         ->toContain('acceptService')
         ->not->toContain($escapedCategoryKey)           // package-only key stripped from imConfig
