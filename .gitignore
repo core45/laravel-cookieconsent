@@ -4,3 +4,4 @@ composer.lock
 /node_modules
 /tests/Browser/Screenshots
 /.idea
+/graphify-out

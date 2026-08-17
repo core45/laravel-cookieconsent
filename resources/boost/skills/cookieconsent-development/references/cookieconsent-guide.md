@@ -55,7 +55,7 @@ use Core45\CookieConsent\Facades\CookieConsent;
 
 ## Translations
 
-Standard Laravel lang files at `lang/vendor/cookieconsent/{locale}/cookieconsent.php` (maps onto orestbida's `language.translations.{locale}` shape: `consentModal`, `preferencesModal`, ...) and `iframemanager.php` (per-service `loadBtn`/`notice`/... strings). Ships `en` and `es`.
+Standard Laravel lang files at `lang/vendor/cookieconsent/{locale}/cookieconsent.php` (maps onto orestbida's `language.translations.{locale}` shape: `consentModal`, `preferencesModal`, ...) and `iframemanager.php` (per-service `loadBtn`/`notice`/... strings). Ships `de`, `en`, `es`, `hr`, `it`, `pl`, `pt`, `sl`, `sv`, `uk`.
 
 `translations_mode`: `'active'` (default) embeds only `app()->getLocale()`; `'all'` embeds every published locale so `CookieConsent.setLanguage()` works client-side without a reload.
 

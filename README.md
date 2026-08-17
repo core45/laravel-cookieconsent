@@ -23,6 +23,9 @@ auto-update mechanism, so pin the package version if you need a specific upstrea
 
 ## Installation
 
+Requires **PHP 8.4+** and Laravel 11, 12 or 13. On PHP 8.2 or 8.3, stay on the `1.x` line
+(`composer require core45/laravel-cookieconsent:^1.1`).
+
 ```bash
 composer require core45/laravel-cookieconsent
 
@@ -126,15 +129,13 @@ php artisan vendor:publish --tag=cookieconsent-lang
 ```
 
 ```
-lang/vendor/cookieconsent/en/cookieconsent.php
-lang/vendor/cookieconsent/es/cookieconsent.php
-lang/vendor/cookieconsent/en/iframemanager.php
-lang/vendor/cookieconsent/es/iframemanager.php
+lang/vendor/cookieconsent/{locale}/cookieconsent.php
+lang/vendor/cookieconsent/{locale}/iframemanager.php
 ```
 
-The package ships `en` and `es` out of the box. `cookieconsent.php` maps directly onto orestbida's
-`language.translations.{locale}` shape (`consentModal`, `preferencesModal`, etc); `iframemanager.php` supplies the
-per-service `loadBtn`/`notice`/... strings.
+The package ships `de`, `en`, `es`, `hr`, `it`, `pl`, `pt`, `sl`, `sv` and `uk` out of the box. `cookieconsent.php`
+maps directly onto orestbida's `language.translations.{locale}` shape (`consentModal`, `preferencesModal`, etc);
+`iframemanager.php` supplies the per-service `loadBtn`/`notice`/... strings.
 
 `config('cookieconsent.translations_mode')` controls how many locales are sent to the browser:
 

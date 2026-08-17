@@ -56,5 +56,6 @@ it('injects all published locales when translations_mode is all', function () {
 
     $built = app(ConfigBuilder::class)->build();
 
-    expect($built['language']['translations'])->toHaveKeys(['en', 'es']);
+    expect(array_keys($built['language']['translations']))
+        ->toEqualCanonicalizing(['de', 'en', 'es', 'hr', 'it', 'pl', 'pt', 'sl', 'sv', 'uk']);
 });
