@@ -46,6 +46,7 @@ jobs:
           # list above once 8.6 ships.
           - php: 'nightly'
             laravel: '13.*'
+            filament: 'none'
             experimental: true
     continue-on-error: ${{ matrix.experimental }}
     name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }} / Filament ${{ matrix.filament }}
@@ -88,12 +89,11 @@ jobs:
             # Parts of the test toolchain declare an upper PHP bound and so
             # refuse to install on an unreleased version: filament pulls
             # nette/php-generator (php 8.1 - 8.5), and pest pulls
-            # brianium/paratest (~8.4.0 || ~8.5.0). Drop the optional Filament
-            # dependency, whose tests already self-skip when it is absent, and
-            # ignore the remaining platform bounds so the suite actually runs
-            # against the new engine. This row is advisory and cannot fail the
-            # build.
-            composer remove filament/filament --dev --no-interaction --no-update
+            # brianium/paratest (~8.4.0 || ~8.5.0). This row already carries
+            # filament: none, which drops the optional dependency above (its
+            # tests self-skip when it is absent); here we only need to ignore
+            # the remaining platform bounds so the suite actually runs against
+            # the new engine. This row is advisory and cannot fail the build.
             composer update --prefer-dist --no-interaction --ignore-platform-req=php
           else
             composer update --prefer-dist --no-interaction
