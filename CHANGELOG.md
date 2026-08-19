@@ -9,6 +9,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 Nothing yet.
 
+## [3.2.1] - 2026-08-19
+
+No code changes. 3.2.0 was tagged before this file existed, so its release tarball has no changelog; this release
+adds one rather than moving a published tag.
+
+### Added
+
+- This changelog, reconstructed from the tag history and covering every release from 1.0.0.
+
+### Fixed
+
+- The nightly CI row had no value for the Filament matrix axis added in 3.2.0, so its job name rendered as a bare
+  `Filament` with nothing after it. It now carries `filament: none`, reusing the branch that drops the optional
+  dependency instead of the hand-rolled `composer remove` the experimental block ran a few lines later.
+
 ## [3.2.0] - 2026-08-19
 
 Filament v3 and v4 are now supported alongside v5.
@@ -149,7 +164,8 @@ Initial release.
 - Vendored cookieconsent 3.1.0 and iframemanager 1.3.0 assets.
 - End-to-end browser coverage for the banner, logging and script gating.
 
-[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.1...HEAD
+[3.2.1]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/core45/laravel-cookieconsent/compare/v2.0.0...v3.0.0
