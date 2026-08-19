@@ -17,13 +17,14 @@ auto-update mechanism, so pin the package version if you need a specific upstrea
 | Translations | Standard Laravel lang files (`lang/vendor/cookieconsent/{locale}/cookieconsent.php`), `active` or `all` locales |
 | Script gating | `@cookiescript` Blade directives that emit blocked `<script type="text/plain">` tags |
 | Server-side reads | `@consent`/`Consent`/`CookieConsent` facade + a `consent:*` route middleware |
-| Audit trail | A `consent_logs` table with an append-only model write path, export/prune Artisan commands, optional Filament resource |
+| Audit trail | A `consent_logs` table with an append-only model write path, export/prune Artisan commands, optional Filament resource (v3, v4 or v5) |
 | Media consent | An `@iframemanager` / `@iframe()` integration for YouTube-style click-to-load embeds |
 | Security | Optional CSP nonce injection for every script tag the package renders |
 
 ## Installation
 
-Requires **PHP 8.4+** and **Laravel 12 or 13**.
+Requires **PHP 8.4+** and **Laravel 12 or 13**. [Filament](#filament-plugin) is optional; if you have it,
+**v3, v4 and v5 are all supported**.
 
 Laravel 11 support was dropped in 3.0: every `laravel/framework` 11.x release is now covered by unfixed
 security advisories, so Composer refuses to install it by default. On PHP 8.2/8.3 use `^1.1`; on Laravel 11
@@ -392,15 +393,37 @@ Schedule::command('cookieconsent:prune')->daily();
 
 An optional, read-only `ConsentLogResource` is available if `filament/filament` is installed. **Filament v3, v4
 and v5 are all supported**, from the same one-line registration — the plugin detects the installed major and
-registers the matching resource, so there is no version to pass:
+registers the matching resource, so there is no version to pass.
+
+**There is nothing to publish.** The resource is plain PHP registered at runtime; no `vendor:publish` tag covers
+it, and no assets or views are involved. You only add the plugin to your panel provider — typically
+`app/Providers/Filament/AdminPanelProvider.php`:
 
 ```php
 use Core45\CookieConsent\Filament\CookieConsentFilamentPlugin;
 
-$panel->plugin(CookieConsentFilamentPlugin::make());
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        // ...your existing configuration
+        ->plugin(CookieConsentFilamentPlugin::make());
+}
 ```
 
-To see what was detected:
+Reload the panel and a **Consent Logs** item appears in the sidebar, at `/{your-panel-path}/consent-logs`.
+
+Two reasons it might not show up:
+
+- **The panel does not discover it on its own.** `discoverResources(in:, for:)` scans only the directory and
+  namespace you hand it — your app's, not a package's — so the plugin line above is what registers the resource.
+  It is not optional.
+- **Authorization.** The item is hidden if a `ConsentLog` policy denies `viewAny()`, or if you run
+  `strictAuthorization()` without one. Check with `ConsentLogResource::canViewAny()`.
+
+The resource sets no navigation icon and no navigation group, so it appears at the top level of the sidebar with
+an empty icon slot.
+
+To see which Filament build was detected:
 
 ```bash
 php artisan cookieconsent:filament
