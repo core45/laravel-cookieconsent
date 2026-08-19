@@ -5,3 +5,4 @@ composer.lock
 /tests/Browser/Screenshots
 /.idea
 /graphify-out
+/.playwright-mcp
