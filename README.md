@@ -390,14 +390,37 @@ Schedule::command('cookieconsent:prune')->daily();
 
 ### Filament plugin
 
-An optional, read-only `ConsentLogResource` is available if `filament/filament` (`^5.0`) is installed. Register it
-on any panel:
+An optional, read-only `ConsentLogResource` is available if `filament/filament` is installed. **Filament v3, v4
+and v5 are all supported**, from the same one-line registration — the plugin detects the installed major and
+registers the matching resource, so there is no version to pass:
 
 ```php
 use Core45\CookieConsent\Filament\CookieConsentFilamentPlugin;
 
 $panel->plugin(CookieConsentFilamentPlugin::make());
 ```
+
+To see what was detected:
+
+```bash
+php artisan cookieconsent:filament
+```
+
+```
+  Filament version  v4.12.6
+  Detected major..  v4
+  Infolist API....  schemas (v4+)
+  Resource in use.  Core45\CookieConsent\Filament\Resources\ConsentLogResource
+```
+
+The two builds are feature-identical; only the Filament API differs. Filament v4 moved infolists onto
+`Filament\Schemas\Schema` and renamed the table row-action method, and that changed the signature of
+`Resource::infolist()` — so a resource written for one side of that break is a *fatal error at class-load time*
+on the other, not a recoverable failure. That is why the two live in separate namespaces
+(`Filament\Resources\…` for v4/v5, `Filament\V3\Resources\…` for v3) and why the branch is a class-name probe
+rather than a runtime check. Only the matching one is ever autoloaded. If you reference the resource class
+directly rather than through the plugin, use `Core45\CookieConsent\Filament\FilamentVersion::resourceClass()`
+instead of naming it yourself.
 
 The resource has no create/edit pages — consent logs are evidence, not editable records. Each row opens a
 read-only modal showing every stored field, including `rejected_categories`, `accepted_services`, `policy_hash`

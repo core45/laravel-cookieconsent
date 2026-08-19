@@ -1,17 +1,23 @@
 <?php
 
-namespace Core45\CookieConsent\Filament\Resources\ConsentLogResource\Schemas;
+namespace Core45\CookieConsent\Filament\V3\Resources\ConsentLogResource\Infolists;
 
 use Core45\CookieConsent\Filament\ConsentLogFormatter;
+use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
+use Filament\Infolists\Infolist;
 
+/**
+ * Filament v3 build of the consent-log detail view. Field-for-field identical
+ * to the v4/v5 version; v3 has no schemas package, so the layout components
+ * come from Filament\Infolists and the entries go through schema() rather than
+ * components().
+ */
 class ConsentLogInfolist
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(Infolist $infolist): Infolist
     {
-        return $schema->components([
+        return $infolist->schema([
             Section::make('Consent')
                 ->columns(2)
                 ->schema([

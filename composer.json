@@ -21,7 +21,7 @@
         "rector/rector": "^2.6.2"
     },
     "suggest": {
-        "filament/filament": "Adds an optional read-only ConsentLog admin resource (^5.0)."
+        "filament/filament": "Adds an optional read-only ConsentLog admin resource (v3, v4 or v5)."
     },
     "autoload": {
         "psr-4": {"Core45\\CookieConsent\\": "src/"}

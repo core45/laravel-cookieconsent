@@ -13,8 +13,34 @@ jobs:
       matrix:
         php: ['8.4', '8.5']
         laravel: ['12.*', '13.*']
+        # Must be a base axis, not an include-only key. An include entry that
+        # names only keys already matching a base combination gets *merged into*
+        # that combination instead of appending a row, so the Filament rows below
+        # would silently collapse onto one 8.4/13.* row and no alternate major
+        # would ever be tested. Listing it here forces them to overwrite, which
+        # is what makes them separate rows.
+        filament: ['^5.7.6']
         experimental: [false]
         include:
+          # The base rows above test the default dev toolchain, which pins
+          # Filament 5. The optional admin resource also supports v4 and v3, so
+          # each gets one row rather than a full cross-product: the Filament
+          # major is independent of the PHP and Laravel axes, and v3 and v4 pull
+          # livewire 3 where v5 pulls livewire 4, so the majors can never be
+          # installed side by side. The 'none' row proves the package still
+          # works with no Filament at all.
+          - php: '8.4'
+            laravel: '13.*'
+            filament: '^4.12'
+            experimental: false
+          - php: '8.4'
+            laravel: '13.*'
+            filament: '^3.3'
+            experimental: false
+          - php: '8.4'
+            laravel: '13.*'
+            filament: 'none'
+            experimental: false
           # PHP 8.6 is not released yet; nightly builds it from master. Advisory
           # only, so a break there never fails the build. Promote it to the php
           # list above once 8.6 ships.
@@ -22,7 +48,7 @@ jobs:
             laravel: '13.*'
             experimental: true
     continue-on-error: ${{ matrix.experimental }}
-    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }}
+    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }} / Filament ${{ matrix.filament }}
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -32,9 +58,17 @@ jobs:
       - name: Install dependencies
         env:
           LARAVEL: ${{ matrix.laravel }}
+          FILAMENT: ${{ matrix.filament }}
           EXPERIMENTAL: ${{ matrix.experimental }}
         run: |
           composer require "illuminate/support:$LARAVEL" --no-interaction --no-update
+          if [ "$FILAMENT" = "none" ]; then
+            composer remove --dev filament/filament --no-interaction --no-update
+          elif [ -n "$FILAMENT" ]; then
+            # Livewire needs no step-back here: filament 3 and 4 both require
+            # livewire ^3.5 transitively, so composer picks it on its own.
+            composer require --dev "filament/filament:$FILAMENT" --no-interaction --no-update
+          fi
           if [ "$LARAVEL" = "12.*" ]; then
             # The default dev toolchain targets Laravel 13: pest 5 and
             # testbench 11 both require laravel/framework ^13.23.0. Step the

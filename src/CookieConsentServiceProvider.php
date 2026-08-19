@@ -3,6 +3,7 @@
 namespace Core45\CookieConsent;
 
 use Core45\CookieConsent\Console\ExportConsentCommand;
+use Core45\CookieConsent\Console\FilamentStatusCommand;
 use Core45\CookieConsent\Console\PruneConsentCommand;
 use Core45\CookieConsent\Http\LogConsentController;
 use Core45\CookieConsent\Http\Middleware\RequireConsent;
@@ -110,6 +111,7 @@ class CookieConsentServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ExportConsentCommand::class,
+                FilamentStatusCommand::class,
                 PruneConsentCommand::class,
             ]);
         }

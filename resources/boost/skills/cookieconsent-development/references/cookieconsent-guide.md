@@ -178,7 +178,10 @@ Schedule pruning: `Schedule::command('cookieconsent:prune')->daily();` in `route
 
 ### Filament
 
-Optional read-only resource (requires `filament/filament` ^5.0), no create/edit pages:
+Optional read-only resource (requires `filament/filament`; v3, v4 and v5 all supported), no create/edit
+pages. The plugin detects the installed major and registers the matching resource — v4/v5 use
+`Filament\Resources\ConsentLogResource`, v3 uses `Filament\V3\Resources\ConsentLogResource`. Check with
+`php artisan cookieconsent:filament`:
 
 ```php
 $panel->plugin(\Core45\CookieConsent\Filament\CookieConsentFilamentPlugin::make());
