@@ -4,7 +4,10 @@ namespace Core45\CookieConsent\Support;
 
 class IframemanagerRenderer
 {
-    public function __construct(protected ScriptsRenderer $scripts) {}
+    public function __construct(
+        protected ScriptsRenderer $scripts,
+        protected TranslationLoader $loader,
+    ) {}
 
     public function render(): string
     {
@@ -14,12 +17,13 @@ class IframemanagerRenderer
 
         $services = [];
         $categoryMap = [];
+        $translations = $this->loader->lines('iframemanager', app()->getLocale());
 
         foreach ((array) config('cookieconsent.iframemanager.services', []) as $name => $service) {
             $categoryMap[$name] = (string) ($service['category'] ?? 'necessary');
             unset($service['category']);
 
-            $lines = trans('cookieconsent::iframemanager.'.$name, [], app()->getLocale());
+            $lines = $translations[$name] ?? null;
 
             if (is_array($lines)) {
                 $service['languages'] = array_replace(

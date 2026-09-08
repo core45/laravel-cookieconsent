@@ -3,8 +3,8 @@
 return [
 
     /*
-    | Every key in this file except `translations_mode`, `csp_nonce`,
-    | `logging` and `iframemanager` is passed straight through to
+    | Every key in this file except `translations_mode`, `translations_override`,
+    | `csp_nonce`, `logging` and `iframemanager` is passed straight through to
     | CookieConsent.run() — see https://cookieconsent.orestbida.com/reference/configuration-reference.html
     */
 
@@ -37,6 +37,11 @@ return [
 
     // 'active' = only the current app locale; 'all' = every published locale.
     'translations_mode' => 'active',
+
+    // 'merge' = a published lang/vendor/cookieconsent/{locale}/*.php is merged
+    // over the package file (Laravel's default, cannot drop keys or shorten
+    // lists); 'replace' = the published file is used wholesale for that locale.
+    'translations_override' => 'merge',
 
     // null, or a callable returning the per-request CSP nonce,
     // e.g. fn () => \Illuminate\Support\Facades\Vite::cspNonce()

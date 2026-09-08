@@ -7,7 +7,9 @@ use Illuminate\Support\Arr;
 class ConfigBuilder
 {
     /** @var list<string> Package-only keys never passed to the JS config. */
-    public const PACKAGE_KEYS = ['translations_mode', 'csp_nonce', 'logging', 'iframemanager'];
+    public const PACKAGE_KEYS = ['translations_mode', 'translations_override', 'csp_nonce', 'logging', 'iframemanager'];
+
+    public function __construct(protected TranslationLoader $loader) {}
 
     /** @return array<string, mixed> */
     public function build(): array
@@ -80,9 +82,9 @@ class ConfigBuilder
         $translations = [];
 
         foreach ($locales as $locale) {
-            $lines = trans('cookieconsent::cookieconsent', [], $locale);
+            $lines = $this->loader->lines('cookieconsent', $locale);
 
-            if (is_array($lines)) {
+            if ($lines !== []) {
                 $translations[$locale] = $lines;
             }
         }

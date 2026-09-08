@@ -9,6 +9,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 Nothing yet.
 
+## [3.3.0] - 2026-09-08
+
+### Added
+
+- `translations_override` config key. The default `'merge'` keeps Laravel's behaviour of merging a published
+  `lang/vendor/cookieconsent/{locale}/*.php` over the package file. `'replace'` uses the published file wholesale for
+  that locale, so a shortened `preferencesModal.sections` list or an omitted string key is honoured instead of being
+  backfilled from the package. Locales with no published file still fall back to the package strings. Applies to both
+  the `cookieconsent` and `iframemanager` groups (#1).
+
 ## [3.2.2] - 2026-09-08
 
 ### Fixed
@@ -180,7 +190,8 @@ Initial release.
 - Vendored cookieconsent 3.1.0 and iframemanager 1.3.0 assets.
 - End-to-end browser coverage for the banner, logging and script gating.
 
-[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.2...HEAD
+[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.2...v3.3.0
 [3.2.2]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.1.0...v3.2.0

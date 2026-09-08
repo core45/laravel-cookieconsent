@@ -159,6 +159,14 @@ entries, and an omitted string key falls back to the package default. Two things
 - To remove or rename anything else (a button label, the intro section), override the key with a value rather than
   leaving it out. An empty title and description still render as an empty section in orestbida's modal.
 
+### Replacing the shipped strings
+
+Set `config('cookieconsent.translations_override')` to `'replace'` and a published
+`lang/vendor/cookieconsent/{locale}/cookieconsent.php` (or `iframemanager.php`) is used wholesale for that locale
+instead of being merged over the package file. What the published file contains is exactly what the browser receives:
+a two-entry `preferencesModal.sections` list renders two sections, and a key you leave out stays out. Locales without a
+published file still fall back to the package strings. The default, `'merge'`, keeps Laravel's usual behaviour.
+
 ## Script gating
 
 `@cookiescript` blocks a `<script>` tag until the visitor has consented to its category, using orestbida's
