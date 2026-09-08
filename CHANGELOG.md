@@ -9,6 +9,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 Nothing yet.
 
+## [3.2.2] - 2026-09-08
+
+### Fixed
+
+- `preferencesModal.sections` entries whose `linkedCategory` is not a key of `config('cookieconsent.categories')` are
+  now dropped before the config reaches the browser, in every embedded locale and after inline `language.translations`
+  overrides are merged. Previously the shipped analytics section survived a necessary-only `categories` config, because
+  Laravel merges a published translation file over the package's with `array_replace_recursive` and a shorter list
+  cannot remove trailing entries. Installs that had such orphan sections will see a new `policy_hash` on subsequent
+  consent logs, since the hash covers the rendered config (#1).
+
+### Changed
+
+- The README's Translations section now explains the merge semantics of published language files and how to remove
+  or override shipped strings.
+
 ## [3.2.1] - 2026-08-19
 
 No code changes. 3.2.0 was tagged before this file existed, so its release tarball has no changelog; this release
@@ -164,7 +180,8 @@ Initial release.
 - Vendored cookieconsent 3.1.0 and iframemanager 1.3.0 assets.
 - End-to-end browser coverage for the banner, logging and script gating.
 
-[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.1...HEAD
+[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.2...HEAD
+[3.2.2]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.0.0...v3.1.0

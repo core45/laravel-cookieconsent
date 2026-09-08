@@ -147,6 +147,18 @@ maps directly onto orestbida's `language.translations.{locale}` shape (`consentM
 - `'active'` (default) — only the current `app()->getLocale()` locale is embedded.
 - `'all'` — every published locale directory is embedded, so client-side locale switches (`CookieConsent.setLanguage()`) work without a page reload.
 
+### Trimming the shipped sections
+
+Laravel applies a published `lang/vendor/cookieconsent/{locale}/cookieconsent.php` on top of the package file with
+`array_replace_recursive`. A shorter `preferencesModal.sections` list therefore cannot delete the package's trailing
+entries, and an omitted string key falls back to the package default. Two things follow:
+
+- Sections whose `linkedCategory` is not present in `config('cookieconsent.categories')` are dropped before the config
+  reaches the browser, so a necessary-only `categories` config removes the shipped analytics section without touching
+  the language file.
+- To remove or rename anything else (a button label, the intro section), override the key with a value rather than
+  leaving it out. An empty title and description still render as an empty section in orestbida's modal.
+
 ## Script gating
 
 `@cookiescript` blocks a `<script>` tag until the visitor has consented to its category, using orestbida's
