@@ -1,6 +1,7 @@
 <?php
 
 use Core45\CookieConsent\Support\ConfigBuilder;
+use Core45\CookieConsent\Support\TranslationLoader;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -123,3 +124,63 @@ it('applies replace mode to the iframemanager strings as well', function () {
     expect($merged)->toContain('Load it')->toContain('loadAllBtn')
         ->and($replaced)->toContain('Load it')->not->toContain('loadAllBtn');
 });
+
+it('keeps the per-service fallback-locale lookup in merge mode', function () {
+    // A consumer locale file that exists but omits a service: Laravel's
+    // per-key lookup falls back to app.fallback_locale for that one service.
+    File::ensureDirectoryExists($this->langDir.'/vendor/cookieconsent/zz');
+    File::put($this->langDir.'/vendor/cookieconsent/zz/iframemanager.php', <<<'PHP'
+    <?php
+
+    return ['vimeo' => ['notice' => 'Vimeo.', 'loadBtn' => 'Vimeo laden']];
+    PHP);
+    config()->set('app.fallback_locale', 'en');
+    config()->set('cookieconsent.iframemanager', [
+        'enabled' => true,
+        'services' => [
+            'youtube' => ['category' => 'analytics', 'embedUrl' => 'https://www.youtube-nocookie.com/embed/{data-id}'],
+        ],
+    ]);
+    app()->setLocale('zz');
+    Route::middleware('web')->get('/_im', fn () => Blade::render('@iframemanager'));
+
+    expect($this->get('/_im')->getContent())->toContain('Load it');
+});
+
+it('skips a published file that does not return an array in replace mode', function () {
+    File::ensureDirectoryExists($this->langDir.'/vendor/cookieconsent/es');
+    File::put($this->langDir.'/vendor/cookieconsent/es/cookieconsent.php', "<?php\n\nreturn 'broken';\n");
+    config()->set('cookieconsent.translations_override', 'replace');
+    app()->setLocale('es');
+
+    $lines = app(ConfigBuilder::class)->build()['language']['translations']['es'];
+
+    expect($lines['consentModal']['title'])->toBe('Utilizamos cookies');
+});
+
+it('refuses to use a locale with path separators as a path segment', function () {
+    // Translator::setLocale() already rejects such strings; this guards the
+    // loader itself, which can be reached with app.fallback_locale or directly.
+    config()->set('cookieconsent.translations_override', 'replace');
+    config()->set('app.fallback_locale', 'en');
+
+    $lines = app(TranslationLoader::class)->lines('cookieconsent', '../../en');
+
+    expect($lines['consentModal']['title'])->toBe('Cookies');
+});
+
+it('embeds locales that only exist in an added lang path when translations_mode is all', function (string $mode) {
+    File::ensureDirectoryExists($this->langDir.'/vendor/cookieconsent/xx');
+    File::put($this->langDir.'/vendor/cookieconsent/xx/cookieconsent.php', <<<'PHP'
+    <?php
+
+    return ['consentModal' => ['title' => 'Xx cookies']];
+    PHP);
+    config()->set('cookieconsent.translations_mode', 'all');
+    config()->set('cookieconsent.translations_override', $mode);
+
+    $translations = app(ConfigBuilder::class)->build()['language']['translations'];
+
+    expect($translations)->toHaveKey('xx')
+        ->and($translations['xx']['consentModal']['title'])->toBe('Xx cookies');
+})->with(['merge', 'replace']);

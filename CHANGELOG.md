@@ -9,6 +9,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 Nothing yet.
 
+## [3.3.1] - 2026-09-08
+
+### Fixed
+
+- 3.3.0 looked up `iframemanager` strings by group and then by service name, which lost Laravel's per-key fallback:
+  a locale file that exists but omits a service no longer fell back to `app.fallback_locale` for that service. The
+  default `merge` mode is back to the per-service `trans()` lookup it used before 3.3.0.
+- In `replace` mode a published file that does not return an array is now skipped instead of silently yielding no
+  translations for that locale, and a locale string is only used as a path segment when it matches
+  `[A-Za-z0-9_-]+`.
+- `translations_mode: 'all'` now also enumerates locales found in every lang path registered with
+  `Translator::addPath()`, not only `lang_path('vendor/cookieconsent')`, matching what `replace` mode reads.
+
 ## [3.3.0] - 2026-09-08
 
 ### Added
@@ -190,7 +203,8 @@ Initial release.
 - Vendored cookieconsent 3.1.0 and iframemanager 1.3.0 assets.
 - End-to-end browser coverage for the banner, logging and script gating.
 
-[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.1...HEAD
+[3.3.1]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.2...v3.3.0
 [3.2.2]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.0...v3.2.1

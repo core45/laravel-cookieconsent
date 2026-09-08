@@ -97,7 +97,13 @@ class ConfigBuilder
     {
         $locales = [];
 
-        foreach ([__DIR__.'/../../resources/lang', lang_path('vendor/cookieconsent')] as $dir) {
+        $dirs = [__DIR__.'/../../resources/lang'];
+
+        foreach ($this->loader->overridePaths() as $path) {
+            $dirs[] = "{$path}/vendor/cookieconsent";
+        }
+
+        foreach ($dirs as $dir) {
             if (is_dir($dir)) {
                 foreach (glob($dir.'/*', GLOB_ONLYDIR) ?: [] as $localeDir) {
                     $locales[] = basename($localeDir);

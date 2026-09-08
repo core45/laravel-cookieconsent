@@ -17,15 +17,14 @@ class IframemanagerRenderer
 
         $services = [];
         $categoryMap = [];
-        $translations = $this->loader->lines('iframemanager', app()->getLocale());
 
         foreach ((array) config('cookieconsent.iframemanager.services', []) as $name => $service) {
             $categoryMap[$name] = (string) ($service['category'] ?? 'necessary');
             unset($service['category']);
 
-            $lines = $translations[$name] ?? null;
+            $lines = $this->loader->lines('iframemanager', app()->getLocale(), (string) $name);
 
-            if (is_array($lines)) {
+            if ($lines !== []) {
                 $service['languages'] = array_replace(
                     [app()->getLocale() => $lines],
                     (array) ($service['languages'] ?? []),
