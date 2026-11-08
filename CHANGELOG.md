@@ -9,6 +9,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 Nothing yet.
 
+## [3.4.0] - 2026-11-08
+
+### Added
+
+- `defer_assets` config key (default `false`). When `true`, `@cookieconsent` stops blocking the first render:
+  `cookieconsent.umd.js` loads with `defer` and `cookieconsent.css` loads without blocking. `run()` still starts
+  at `DOMContentLoaded`, and the banner stays hidden until the stylesheet has loaded so it never renders
+  unstyled. An inline stub defines `window.CookieConsent` until the library arrives: getters return the
+  library's own pre-`run()` answers, other calls are queued and replayed as soon as the library has loaded, and
+  references saved early forward to the real library. With the flag off the rendered markup
+  is unchanged, which a fixture test now pins.
+
 ## [3.3.1] - 2026-09-08
 
 ### Fixed
@@ -203,7 +215,8 @@ Initial release.
 - Vendored cookieconsent 3.1.0 and iframemanager 1.3.0 assets.
 - End-to-end browser coverage for the banner, logging and script gating.
 
-[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.1...HEAD
+[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.4.0...HEAD
+[3.4.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.1...v3.4.0
 [3.3.1]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.2...v3.3.0
 [3.2.2]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.1...v3.2.2

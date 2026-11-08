@@ -37,7 +37,7 @@ php artisan migrate
 Add `@cookieconsent` to the layout's `<head>` (recommended placement; the script waits for `DOMContentLoaded`). Add `@iframemanager` right after it if using embeds. The package auto-excludes its `cc_cookie` from `EncryptCookies` — no `bootstrap/app.php` edits needed.
 
 ### Configuration
-`config/cookieconsent.php` is passed almost verbatim to `CookieConsent.run()`. Package-only keys stripped before reaching JS: `translations_mode`, `csp_nonce`, `logging`, `iframemanager`. Define categories under `categories` (e.g. `necessary` with `readOnly => true`, plus `analytics`, `marketing`, ...). For RegExp cookie autoClear matching use `CookieConsent::regex('^_ga')` — plain strings are exact matches.
+`config/cookieconsent.php` is passed almost verbatim to `CookieConsent.run()`. Package-only keys stripped before reaching JS: `translations_mode`, `translations_override`, `csp_nonce`, `defer_assets`, `logging`, `iframemanager`. Set `defer_assets => true` to stop the stylesheet and library blocking the first render; an inline stub answers `window.CookieConsent` calls until the library loads (see README "Non-blocking assets"). Define categories under `categories` (e.g. `necessary` with `readOnly => true`, plus `analytics`, `marketing`, ...). For RegExp cookie autoClear matching use `CookieConsent::regex('^_ga')` — plain strings are exact matches.
 
 ### Script Gating
 ```blade

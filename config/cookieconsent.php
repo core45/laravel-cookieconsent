@@ -4,8 +4,8 @@ return [
 
     /*
     | Every key in this file except `translations_mode`, `translations_override`,
-    | `csp_nonce`, `logging` and `iframemanager` is passed straight through to
-    | CookieConsent.run() — see https://cookieconsent.orestbida.com/reference/configuration-reference.html
+    | `csp_nonce`, `defer_assets`, `logging` and `iframemanager` is passed straight
+    | through to CookieConsent.run() — see https://cookieconsent.orestbida.com/reference/configuration-reference.html
     */
 
     'cookie' => [
@@ -46,6 +46,12 @@ return [
     // null, or a callable returning the per-request CSP nonce,
     // e.g. fn () => \Illuminate\Support\Facades\Vite::cspNonce()
     'csp_nonce' => null,
+
+    // false = cookieconsent.css and cookieconsent.umd.js block the first render,
+    // exactly as before 3.4. true = the script loads with `defer`, the stylesheet
+    // loads without blocking, and a small inline stub answers window.CookieConsent
+    // calls until the library arrives. See README "Non-blocking assets".
+    'defer_assets' => false,
 
     'logging' => [
         'enabled' => true,

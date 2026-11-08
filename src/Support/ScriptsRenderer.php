@@ -13,6 +13,7 @@ class ScriptsRenderer
         return view('cookieconsent::scripts', [
             'config' => $this->builder->build(),
             'nonceAttr' => $this->nonceAttribute(),
+            'deferAssets' => (bool) config('cookieconsent.defer_assets', false),
             'loggingEnabled' => $loggingEnabled,
             'csrfToken' => $loggingEnabled && config('cookieconsent.logging.csrf', true) ? csrf_token() : null,
             'logUrl' => $loggingEnabled ? url('cookie-consent/log') : null,

@@ -7,7 +7,7 @@ use Illuminate\Support\Arr;
 class ConfigBuilder
 {
     /** @var list<string> Package-only keys never passed to the JS config. */
-    public const PACKAGE_KEYS = ['translations_mode', 'translations_override', 'csp_nonce', 'logging', 'iframemanager'];
+    public const PACKAGE_KEYS = ['translations_mode', 'translations_override', 'csp_nonce', 'defer_assets', 'logging', 'iframemanager'];
 
     public function __construct(protected TranslationLoader $loader) {}
 

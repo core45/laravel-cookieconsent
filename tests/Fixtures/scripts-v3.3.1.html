@@ -1,0 +1,116 @@
+<link rel="stylesheet" href="http://localhost/vendor/cookieconsent/cookieconsent.css">
+<script nonce="fixture-nonce" src="http://localhost/vendor/cookieconsent/cookieconsent.umd.js"></script>
+<script nonce="fixture-nonce">
+let config = (function revive(node) {
+    if (Array.isArray(node)) {
+        return node.map(revive);
+    }
+    if (node && typeof node === 'object') {
+        if (typeof node.__regex__ === 'string') {
+            return new RegExp(node.__regex__, node.flags || '');
+        }
+        for (const key of Object.keys(node)) {
+            node[key] = revive(node[key]);
+        }
+    }
+    return node;
+})(JSON.parse('{\u0022cookie\u0022:{\u0022name\u0022:\u0022cc_cookie\u0022,\u0022expiresAfterDays\u0022:182},\u0022mode\u0022:\u0022opt-in\u0022,\u0022revision\u0022:0,\u0022guiOptions\u0022:{\u0022consentModal\u0022:{\u0022layout\u0022:\u0022box\u0022,\u0022position\u0022:\u0022bottom left\u0022},\u0022preferencesModal\u0022:{\u0022layout\u0022:\u0022box\u0022}},\u0022categories\u0022:{\u0022necessary\u0022:{\u0022enabled\u0022:true,\u0022readOnly\u0022:true},\u0022analytics\u0022:{\u0022autoClear\u0022:{\u0022cookies\u0022:[{\u0022name\u0022:\u0022_gid\u0022}]}}},\u0022language\u0022:{\u0022default\u0022:\u0022en\u0022,\u0022translations\u0022:{\u0022en\u0022:{\u0022consentModal\u0022:{\u0022title\u0022:\u0022We use cookies\u0022,\u0022description\u0022:\u0022We use cookies to ensure basic site functionality and to analyse our traffic. You decide which categories you allow.\u0022,\u0022acceptAllBtn\u0022:\u0022Accept all\u0022,\u0022acceptNecessaryBtn\u0022:\u0022Reject all\u0022,\u0022showPreferencesBtn\u0022:\u0022Manage preferences\u0022},\u0022preferencesModal\u0022:{\u0022title\u0022:\u0022Cookie preferences\u0022,\u0022acceptAllBtn\u0022:\u0022Accept all\u0022,\u0022acceptNecessaryBtn\u0022:\u0022Reject all\u0022,\u0022savePreferencesBtn\u0022:\u0022Save preferences\u0022,\u0022closeIconLabel\u0022:\u0022Close\u0022,\u0022sections\u0022:[{\u0022title\u0022:\u0022Cookie usage\u0022,\u0022description\u0022:\u0022We use cookies to provide basic functionality and improve your experience.\u0022},{\u0022title\u0022:\u0022Strictly necessary cookies\u0022,\u0022description\u0022:\u0022Essential for the website to function. Always active.\u0022,\u0022linkedCategory\u0022:\u0022necessary\u0022},{\u0022title\u0022:\u0022Analytics cookies\u0022,\u0022description\u0022:\u0022Help us understand how visitors use the website.\u0022,\u0022linkedCategory\u0022:\u0022analytics\u0022}]}}}}}'));
+(function () {
+    const logUrl = 'http:\/\/localhost\/cookie-consent\/log';
+    const csrfToken = 'CSRF_TOKEN';
+    let pending = null;
+
+    const makeIdempotencyKey = function (consentId, revision, action) {
+        // Kept well under the 64-char column/validation limit: a full UUID
+        // consentId plus a full crypto.randomUUID() would overflow it, so
+        // both are shortened while staying unique per event.
+        const rand = (window.crypto && window.crypto.randomUUID)
+            ? window.crypto.randomUUID().replace(/-/g, '').slice(0, 10)
+            : Math.random().toString(36).slice(2, 12);
+
+        return (consentId || '').slice(0, 12) + '.' + revision + '.' + action.slice(0, 13) + '.' + Date.now().toString(36) + '.' + rand;
+    };
+
+    const sendBeacon = function () {
+        if (pending === null || !navigator.sendBeacon) {
+            return;
+        }
+        const blob = new Blob([JSON.stringify(pending.body)], { type: 'application/json' });
+        if (navigator.sendBeacon(logUrl, blob)) {
+            pending = null;
+        }
+    };
+
+    window.addEventListener('pagehide', sendBeacon);
+    window.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') {
+            sendBeacon();
+        }
+    });
+
+    const attemptSend = function (body, attempt) {
+        const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+                headers['X-CSRF-TOKEN'] = csrfToken;
+        
+        fetch(logUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
+        }).then(function (response) {
+            if (response.ok) {
+                if (pending && pending.body.idempotencyKey === body.idempotencyKey) {
+                    pending = null;
+                }
+                return;
+            }
+            if ((response.status === 429 || response.status >= 500) && attempt < 2) {
+                setTimeout(function () { attemptSend(body, attempt + 1); }, attempt === 0 ? 1000 : 3000);
+                return;
+            }
+            if (window.console && console.warn) {
+                console.warn('cookieconsent: failed to log consent', response.status);
+            }
+        }).catch(function (e) {
+            if (attempt < 2) {
+                setTimeout(function () { attemptSend(body, attempt + 1); }, attempt === 0 ? 1000 : 3000);
+                return;
+            }
+            if (window.console && console.warn) {
+                console.warn('cookieconsent: failed to log consent', e);
+            }
+        });
+    };
+
+    const logConsent = function (action) {
+        const cookie = window.CookieConsent.getCookie();
+        const preferences = window.CookieConsent.getUserPreferences();
+        const body = {
+            action: action,
+            consentId: cookie.consentId,
+            revision: cookie.revision,
+            acceptType: preferences.acceptType,
+            acceptedCategories: preferences.acceptedCategories,
+            rejectedCategories: preferences.rejectedCategories,
+            acceptedServices: preferences.acceptedServices,
+            languageCode: cookie.languageCode,
+            payload: cookie,
+            idempotencyKey: makeIdempotencyKey(cookie.consentId, cookie.revision, action),
+                        _token: csrfToken
+                    };
+        pending = { body: body };
+        attemptSend(body, 0);
+    };
+    window.addEventListener('cc:onFirstConsent', function () { logConsent('first_consent'); });
+    window.addEventListener('cc:onChange', function () { logConsent('change'); });
+})();
+</script>
+<script nonce="fixture-nonce">
+(function () {
+    var start = function () { window.CookieConsent.run(config); };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
+})();
+</script>

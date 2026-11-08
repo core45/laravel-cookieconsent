@@ -1,5 +1,9 @@
+@if ($deferAssets)
+@include('cookieconsent::deferred-assets')
+@else
 <link rel="stylesheet" href="{{ asset('vendor/cookieconsent/cookieconsent.css') }}">
 <script{!! $nonceAttr !!} src="{{ asset('vendor/cookieconsent/cookieconsent.umd.js') }}"></script>
+@endif
 <script{!! $nonceAttr !!}>
 let config = (function revive(node) {
     if (Array.isArray(node)) {
@@ -111,6 +115,31 @@ let config = (function revive(node) {
 @endif
 </script>
 @stack('cookieconsent:config')
+@if ($deferAssets)
+<script{!! $nonceAttr !!}>
+(function () {
+    // Deferred scripts have all run by DOMContentLoaded, so run() starts at
+    // the same moment as without defer_assets. Anything still queued is
+    // replayed first, and the banner stays hidden until the stylesheet lands.
+    var start = function () {
+        var deferred = window._ccDeferred;
+        if (!deferred.flush()) {
+            if (window.console && console.warn) {
+                console.warn('cookieconsent: cookieconsent.umd.js did not load');
+            }
+            return;
+        }
+        deferred.hideUntilStyled();
+        window.CookieConsent.run(config);
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
+})();
+</script>
+@else
 <script{!! $nonceAttr !!}>
 (function () {
     var start = function () { window.CookieConsent.run(config); };
@@ -121,3 +150,4 @@ let config = (function revive(node) {
     }
 })();
 </script>
+@endif

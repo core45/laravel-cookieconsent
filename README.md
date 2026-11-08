@@ -20,6 +20,7 @@ auto-update mechanism, so pin the package version if you need a specific upstrea
 | Audit trail | A `consent_logs` table with an append-only model write path, export/prune Artisan commands, optional Filament resource (v3, v4 or v5) |
 | Media consent | An `@iframemanager` / `@iframe()` integration for YouTube-style click-to-load embeds |
 | Security | Optional CSP nonce injection for every script tag the package renders |
+| Performance | Opt-in `defer_assets`: the stylesheet and library stop blocking the first render |
 
 ## Installation
 
@@ -558,6 +559,48 @@ Combining both mechanisms to wire up [Google Consent Mode v2](https://developers
 </script>
 @endpush
 ```
+
+## Non-blocking assets
+
+By default `@cookieconsent` renders a plain `<link rel="stylesheet">` and `<script src>`. Placed in `<head>`, both
+block the first render, and Lighthouse reports them under "Render-blocking requests". Neither is needed for the
+first paint, because the banner only appears once `CookieConsent.run()` has been called at `DOMContentLoaded`.
+
+Set `defer_assets` to `true` to take them off the critical path:
+
+```php
+'defer_assets' => true,
+```
+
+With the flag on:
+
+- `cookieconsent.umd.js` loads with `defer`.
+- `cookieconsent.css` loads as a print stylesheet and is switched to all media once it arrives.
+- `run()` still starts at `DOMContentLoaded`, so a `DOMContentLoaded` handler sees the same consent state as
+  without the flag. If the stylesheet has not arrived by then, the banner container stays hidden until it loads
+  (or fails to load), so the banner never renders unstyled.
+- A small inline stub defines `window.CookieConsent` before the library arrives, so code that calls it early
+  keeps working. That includes module scripts placed before `@cookieconsent`, such as `@vite`:
+  - `acceptedCategory()`, `acceptedService()`, `validConsent()`, `getUserPreferences()`, `getCookie()`,
+    `validCookie()` and `getConfig()` return what the library itself returns before `run()`. A browser test
+    compares the two.
+  - Every other method is queued and replayed in order as soon as the library has loaded, before `run()`.
+    `run()`, `setLanguage()` and `loadScript()` still return a Promise.
+  - A reference saved early (`const cc = window.CookieConsent`) forwards to the real library once it loads.
+- Script gating, `cc:*` events, the consent audit trail and the CSP nonce work the same as without the flag.
+  The stub uses no inline event handlers.
+
+Limits:
+
+- The library replaces `window.CookieConsent` with its own object when it loads. Properties you add to the stub
+  are lost, and `cc === window.CookieConsent` is `false` for a reference saved early.
+- A queued call cannot return the library's answer. `setCookieData()` returns `false`, and an error thrown
+  during replay is logged to the console instead of reaching the caller.
+- If the library fails to load (for example, an ad blocker blocks it), queued calls never run, and a console
+  warning is logged. Without the flag the same page throws a `TypeError` instead.
+- `@iframemanager` assets are not affected by this flag.
+
+With the flag off, the markup is byte-for-byte the same as in 3.3.
 
 ## Content Security Policy
 
