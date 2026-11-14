@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [3.5.0] - 2026-11-14
+
 ### Upgrading
 
 - Re-publish the assets, or the site keeps serving the old 3.1.0 files from `public/vendor/cookieconsent`:
@@ -245,7 +249,8 @@ Initial release.
 - Vendored cookieconsent 3.1.0 and iframemanager 1.3.0 assets.
 - End-to-end browser coverage for the banner, logging and script gating.
 
-[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.4.0...HEAD
+[Unreleased]: https://github.com/core45/laravel-cookieconsent/compare/v3.5.0...HEAD
+[3.5.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.1...v3.4.0
 [3.3.1]: https://github.com/core45/laravel-cookieconsent/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/core45/laravel-cookieconsent/compare/v3.2.2...v3.3.0
