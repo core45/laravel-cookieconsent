@@ -47,6 +47,13 @@ php artisan vendor:publish --tag=cookieconsent-views        # resources/views/ve
 php artisan vendor:publish --tag=cookieconsent-migrations   # copy the migration into database/migrations
 ```
 
+The published assets are copies. `composer update` does not refresh them, so re-publish them after every package
+update that changes the bundled JS or CSS (the CHANGELOG says when):
+
+```bash
+php artisan vendor:publish --tag=cookieconsent-assets --force
+```
+
 Add `@cookieconsent` to your layout's `<head>`. This is the recommended placement — the banner script waits for
 `DOMContentLoaded` internally, so it's safe to load it before the rest of the page:
 

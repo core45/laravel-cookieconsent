@@ -7,6 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Upgrading
+
+- Re-publish the assets, or the site keeps serving the old 3.1.0 files from `public/vendor/cookieconsent`:
+  `php artisan vendor:publish --tag=cookieconsent-assets --force`. The package's views now expect the 3.3.0 DOM,
+  so with stale assets the `defer_assets` focus restore does nothing.
+- If you published the views (`cookieconsent-views`), your `deferred-assets.blade.php` copy keeps the old focus
+  selectors. Re-publish it, or apply the same selector change from the package's copy by hand.
+
 ### Changed
 
 - Vendored cookieconsent upgraded from 3.1.0 to 3.3.0
@@ -16,10 +24,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   the GitHub `v3.3.0` tag byte for byte. Upstream brings consent-correctness fixes (services of excluded
   categories, rejected default categories, removed categories and services, readOnly `onAccept`), accessibility
   fixes, and new options that pass straight through `config/cookieconsent.php`: `respectGpc` to honour the Global
-  Privacy Control signal, and leaving out `cookie.domain` entirely. iframemanager stays at 1.3.0, its latest release.
+  Privacy Control signal, and `cookie.domain => ''` to leave out the cookie's `Domain` attribute (a host-only
+  cookie, not shared with subdomains). iframemanager stays at 1.3.0, its latest release.
 - **Behaviour change in `opt-out` mode:** `acceptedCategory()` and `acceptedService()` now return `true` for the
   default-enabled categories before the visitor makes a choice, matching the scripts that already run. Code that
-  read `false` there as "no consent yet" should check `validConsent()` instead. `opt-in` mode is unaffected.
+  read `false` there as "no consent yet" should check `validConsent()` instead. The server side is unchanged:
+  with no cookie yet, `Consent::has()` and `@consent` still return `false`, so in that window the browser and the
+  server answer differently. The package's iframemanager bridge is not affected, because it applies consent only
+  after `validConsent()` or a `cc:onConsent` / `cc:onChange` event. `opt-in` mode is unaffected.
 
 ### Fixed
 
