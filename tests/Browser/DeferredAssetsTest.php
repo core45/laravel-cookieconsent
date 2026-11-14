@@ -225,7 +225,7 @@ it('hides the banner until a slow stylesheet arrives, then restores focus', func
     expect($page->script('() => window.__firstFrame'))->toBe(['display' => 'none', 'media' => 'print'])
         ->and($revealed)->toBe($root === null ? 'BODY' : 'app')
         ->and($page->script("() => getComputedStyle(document.getElementById('cc-main')).position"))->toBe('fixed')
-        ->and($page->script("() => document.activeElement.matches('#cc-main .cm > [tabindex=\"-1\"]')"))->toBeTrue();
+        ->and($page->script("() => document.activeElement.matches('#cc-main .cm[tabindex=\"-1\"]')"))->toBeTrue();
 })->with(['body' => [null], 'custom root' => ['#app']]);
 
 it('focuses the same element as the library when the stylesheet is fast', function () {
@@ -235,7 +235,21 @@ it('focuses the same element as the library when the stylesheet is fast', functi
 
     $focused = $page->script(<<<'JS'
         () => new Promise(function (resolve) {
-            setTimeout(function () { resolve(document.activeElement.matches('#cc-main .cm > [tabindex="-1"]')); }, 300);
+            setTimeout(function () { resolve(document.activeElement.matches('#cc-main .cm[tabindex="-1"]')); }, 300);
+        })
+    JS);
+
+    expect($focused)->toBeTrue();
+});
+
+it('matches the element the library focuses in the preferences modal', function () {
+    $page = visit('/deferred');
+
+    $page->click('Cookie settings')->assertSee('Cookie preferences');
+
+    $focused = $page->script(<<<'JS'
+        () => new Promise(function (resolve) {
+            setTimeout(function () { resolve(document.activeElement.matches('#cc-main .pm__title[tabindex="-1"]')); }, 300);
         })
     JS);
 

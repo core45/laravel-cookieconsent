@@ -7,7 +7,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- Vendored cookieconsent upgraded from 3.1.0 to 3.3.0
+  ([3.2.0](https://github.com/orestbida/cookieconsent/releases/tag/v3.2.0),
+  [3.2.1](https://github.com/orestbida/cookieconsent/releases/tag/v3.2.1),
+  [3.3.0](https://github.com/orestbida/cookieconsent/releases/tag/v3.3.0)). The files match the npm tarball and
+  the GitHub `v3.3.0` tag byte for byte. Upstream brings consent-correctness fixes (services of excluded
+  categories, rejected default categories, removed categories and services, readOnly `onAccept`), accessibility
+  fixes, and new options that pass straight through `config/cookieconsent.php`: `respectGpc` to honour the Global
+  Privacy Control signal, and leaving out `cookie.domain` entirely. iframemanager stays at 1.3.0, its latest release.
+- **Behaviour change in `opt-out` mode:** `acceptedCategory()` and `acceptedService()` now return `true` for the
+  default-enabled categories before the visitor makes a choice, matching the scripts that already run. Code that
+  read `false` there as "no consent yet" should check `validConsent()` instead. `opt-in` mode is unaffected.
+
+### Fixed
+
+- With `defer_assets`, focus is restored to the element cookieconsent 3.3 focuses (the `.cm` box, or the
+  `.pm__title` heading in the preferences modal). The pre-`run()` `getConfig()` stub also reports the new
+  `respectGpc: false` default.
 
 ## [3.4.0] - 2026-11-08
 

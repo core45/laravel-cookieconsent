@@ -32,14 +32,16 @@
 
     // The library moves focus into a modal shortly after showing it. That
     // focus is lost while the container is hidden, so it is repeated here.
+    // cookieconsent 3.3 focuses the .cm box itself in the consent modal and
+    // the .pm__title heading in the preferences modal.
     var restoreFocus = function () {
         if (document.activeElement && document.activeElement !== document.body) {
             return;
         }
         var state = document.documentElement.classList;
         var selector = state.contains('show--preferences')
-            ? '#cc-main .pm > [tabindex="-1"]'
-            : (state.contains('show--consent') ? '#cc-main .cm > [tabindex="-1"]' : null);
+            ? '#cc-main .pm__title[tabindex="-1"]'
+            : (state.contains('show--consent') ? '#cc-main .cm[tabindex="-1"]' : null);
         var target = selector ? document.querySelector(selector) : null;
         if (target) {
             target.focus();
@@ -132,6 +134,7 @@
                 autoClearCookies: true,
                 manageScriptTags: true,
                 hideFromBots: true,
+                respectGpc: false,
                 cookie: { name: 'cc_cookie', expiresAfterDays: 182, domain: '', path: '/', secure: true, sameSite: 'Lax' }
             };
 

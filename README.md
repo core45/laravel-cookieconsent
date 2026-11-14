@@ -6,7 +6,7 @@ a hand-written JS blob, i18n through normal Laravel lang files, server-side read
 Blade-driven script gating, and a database audit trail of every consent decision whose model write path is
 append-only.
 
-The package bundles orestbida/cookieconsent **3.1.0** and iframemanager **1.3.0**, served self-hosted from
+The package bundles orestbida/cookieconsent **3.3.0** and iframemanager **1.3.0**, served self-hosted from
 `resources/dist` / the published `vendor/cookieconsent` assets — no CDN request is made. Upstream updates are
 re-vendored and checksum-verified by the maintainers, then shipped as a new package release; there is no
 auto-update mechanism, so pin the package version if you need a specific upstream JS version.
